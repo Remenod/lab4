@@ -61,76 +61,166 @@ namespace Lab4
     }
     class ArrayMethodLessRealization : ITaskContaiter
     {
+        private static double[] DefaultArrayInit(byte inputType)
+        {
+            double[] output = [];
+            switch (inputType)
+            {
+                case 1:
+                    output = AMFR.DefaultArrayInit(inputType);
+                    break;
+                case 2:                    
+                    var input = Custom.ReadLine(White, true).Split(' ', '\t');
+                    output = new double[input.Length];
+                    for (int i = 0; i < input.Length; i++)                    
+                        output[i] = double.Parse(input[i]);                   
+                    break;
+                case 3:
+                    output = AMFR.DefaultArrayInit(inputType);
+                    break;
+            }
+            return output;
+        }
         public void Task1(byte inputType)
         {
-            
+            var input = DefaultArrayInit(inputType);
         }
         public void Task2(byte inputType)
         {
+            var input = DefaultArrayInit(inputType);
 
         }
         public void Task3(byte inputType)
         {
+            var input = DefaultArrayInit(inputType);
 
         }
         public void Task4(byte inputType)
         {
+            var input = DefaultArrayInit(inputType);
 
         }
         public void Task5(byte inputType)
         {
+            var input = DefaultArrayInit(inputType);
 
         }
         public void Task6(byte inputType)
         {
+            var input = DefaultArrayInit(inputType);
 
         }
         public void Task7(byte inputType)
         {
+            var input = DefaultArrayInit(inputType);
 
         }
         public void Task8(byte inputType)
         {
+            var input = DefaultArrayInit(inputType);
 
         }
     }
     class ArrayMethodFulRealization : ITaskContaiter
-    {
+    {        
+        public static double[] DefaultArrayInit(byte inputType) 
+        {
+            double[] output = [];
+            switch (inputType) 
+            {
+                case 1:
+                    uint num;
+                    do
+                    {
+                        Custom.WriteColored("Введіть кількість елементів масиву для генерації масиву з елементами від -1000 до 1000:\n", White);
+                        num = Custom.ReadLine(uint.Parse, true, "Неправильний тип введення", Red, Yellow, true);
+                        Custom.WriteColored("Використовувати лише цілі числа?:\n", White, 
+                                            "0", Yellow, " - ні (кількість знаків після коми між 0 та 7).\n",White,
+                                            "1", Yellow, " - так.\n",White);
+                        var rnNumType = Custom.ReadLine(uint.Parse, true, "Неправильний тип введення", Red, Yellow, true);
+                        var rn = new Random();
+                        Func<double> random = (rnNumType == 0) ? () => Math.Round((rn.NextDouble() * 2000) - 1000, rn.Next(7)) : () => rn.Next(-1000, 1000);
+                        output = new double[num];
+                        for (int i = 0; i < num; i++)                        
+                            output[i] = random();                        
+                        Custom.WriteColored($"Результат:\n{String.Join(" ", output)}\n", White);
+                    }
+                    while (num == 0);
+                    break;
+                case 2:
+                    Custom.WriteColored("Введіть послідовно елементи масиву через пробіл або/та табуляцію:\n", White);
+                    output = Array.ConvertAll(Custom.ReadLine(White,true).Split(' ', '\t'), double.Parse);
+                    break;
+                case 3:                                        
+                    do
+                    {
+                        Custom.WriteColored("Введіть кількість елементів масиву:\n", White);
+                        num = Custom.ReadLine(uint.Parse, true, "Неправильний тип введення", Red, Yellow, true);
+                    }
+                    while (num == 0);
+                    Custom.WriteColored("Введіть послідовно елементи масиву через ", White, "Enter", Yellow, ":\n", White);
+                    output = new double[num];
+                    for (int i = 0; i < num; i++)
+                    {
+                        start:
+                        try
+                        {
+                            Custom.WriteColored($"{i + 1}: ", White);
+                            output[i] = Custom.ReadLine(double.Parse, false, Yellow);
+                        }
+                        catch (Exception e) when (e is ArgumentException) 
+                        { 
+                            Custom.WriteColored("Неправильний тип введення\n", Red); 
+                            goto start;
+                        }
+                    }
+                    break;
+            }
+            return output;
+        }
         public void Task1(byte inputType) 
         {
-
+            var input = DefaultArrayInit(inputType);
+            
         }
         public void Task2(byte inputType) 
         {
+            var input = DefaultArrayInit(inputType);
 
         }
         public void Task3(byte inputType) 
         {
+            var input = DefaultArrayInit(inputType);
 
         }
         public void Task4(byte inputType) 
         {
+            var input = DefaultArrayInit(inputType);
 
         }
         public void Task5(byte inputType) 
         {
+            var input = DefaultArrayInit(inputType);
 
         }
         public void Task6(byte inputType) 
         {
+            var input = DefaultArrayInit(inputType);
 
         }
         public void Task7(byte inputType) 
         {
+            var input = DefaultArrayInit(inputType);
 
         }
         public void Task8(byte inputType) 
         {
+            var input = DefaultArrayInit(inputType);
 
         }
     }
     static class Other
-    {
+    {        
         public delegate void Task(byte inputType);
         public interface ITaskContaiter 
         {
@@ -143,20 +233,20 @@ namespace Lab4
             public void Task7(byte inputType);
             public void Task8(byte inputType);
         }
-        static public void StartTasks()
-        {            
-            ITaskContaiter TaskContainer = (SelectArrayMethodsUsage() == 0) ? new AMLR() : new AMFR();                     
-            Task task = SelectTask() switch {
-                1 => TaskContainer.Task1,
-                2 => TaskContainer.Task2,
-                3 => TaskContainer.Task3,
-                4 => TaskContainer.Task4,
-                5 => TaskContainer.Task5,
-                6 => TaskContainer.Task6,
-                7 => TaskContainer.Task7,
-                8 => TaskContainer.Task8,
-                _ => throw new Exception("Щось пішло не так.")};
-            task(SelectInputType());
+        static public byte SelectArrayMethodsUsage()
+        {
+            Custom.WriteColored("Виберіть тип виконання програми:\n", White,
+                                "0", Yellow, " - Без методів классу Array стандартої бібліотеки.\n", White,
+                                "1", Yellow, " - З методами классу Array стандартої бібліотеки.\n", White);
+        start:
+            var x = Custom.ReadLine(Convert.ToByte, true, "Неправильний тип введення", Red, Yellow, true);
+            if (x == 0 || x == 1)
+                return x;
+            else
+            {
+                Custom.WriteColored("Неправильний тип введення\n", Red);
+                goto start;
+            }
         }        
         static public byte SelectTask() 
         {
@@ -195,28 +285,48 @@ namespace Lab4
                 goto start;
             }
         }
-        static public byte SelectArrayMethodsUsage() 
-        {            
-            Custom.WriteColored("Виберіть тип виконання програми:\n", White, 
-                                "0",Yellow," - Без методів классу Array стандартої бібліотеки.\n",White,
-                                "1",Yellow," - З методами классу Array стандартої бібліотеки.\n", White);
-            start:
-            var x = Custom.ReadLine(Convert.ToByte, true, "Неправильний тип введення",Red , Yellow, true);
-            if (x == 0 || x == 1)
-                return x;
-            else
+        static public void StartTasks()
+        {
+            var arrayMethodsUsage = SelectArrayMethodsUsage();
+            var task = SelectTask();
+            var inputType = SelectInputType();
+            ITaskContaiter TaskContainer = (arrayMethodsUsage == 0) ? new AMLR() : new AMFR();
+            Task Task = (inputType) =>
             {
-                Custom.WriteColored("Неправильний тип введення\n", Red);
-                goto start;
-            }
+                Custom.WriteColored
+                (
+                    "Запускаю задачу ", White, $"{task} ", Yellow,
+                    ((arrayMethodsUsage == 0) ? "без використання " : "з використанням ") + "методів класу System.", White, "Array ", DarkGreen,
+                    "та використанням " + inputType switch
+                    {
+                        1 => "випадкового заповнення.\n\n",
+                        2 => "заповнення в рядок.\n\n",
+                        3 => "заповнення в стовпчик.\n\n"
+                    }, White
+                );
+            };
+            Task += task switch
+            {
+                1 => TaskContainer.Task1,
+                2 => TaskContainer.Task2,
+                3 => TaskContainer.Task3,
+                4 => TaskContainer.Task4,
+                5 => TaskContainer.Task5,
+                6 => TaskContainer.Task6,
+                7 => TaskContainer.Task7,
+                8 => TaskContainer.Task8
+            };
+            Task(inputType);
+            Console.WriteLine();
         }
+
     }    
     internal class Program
     {
         static void Main()
         {
             Console.OutputEncoding = System.Text.Encoding.Unicode;
-            while(true) StartTasks();            
+            while (true) StartTasks();            
         }
     }
 }
