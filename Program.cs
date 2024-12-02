@@ -497,7 +497,6 @@ namespace Lab4
     {
         static void Main()
         {
-            new BigDouble(16,-1) == 1.6;
             Console.OutputEncoding = System.Text.Encoding.Unicode;
             while (true) StartTask(SelectArrayMethodsUsage(), SelectTask(), SelectInputType());
         }
