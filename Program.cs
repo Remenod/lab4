@@ -60,7 +60,7 @@ namespace Lab4
         }
     }
     class ArrayMethodLessRealization : ITaskContaiter
-    {
+    {        
         private static double[] DefaultArrayInit(byte inputType)
         {
             double[] output = [];
@@ -84,6 +84,22 @@ namespace Lab4
         public void Task1(byte inputType)
         {
             var input = DefaultArrayInit(inputType);
+            decimal result = 1;
+            decimal tempResult = 1;
+            var lastMax = (value: double.MinValue, index: 0);
+            for (int i = 0; i < input.Length; i++)
+            {
+                if (lastMax.value <= input[i])
+                {
+                    lastMax = (input[i], i);
+                    result = tempResult;
+                }
+                tempResult *= (decimal)input[i];
+            }
+            Custom.WriteColored(((lastMax.index == 0)
+                                ? "Перший елемент максимальний, добуток чисел перед останім входженням максимального елементу не існує"
+                                : $"Добуток чисел перед останнім входженням максимального числа:\n{result}")
+                                + "\n", White);
         }
         public void Task2(byte inputType)
         {
@@ -181,7 +197,22 @@ namespace Lab4
         public void Task1(byte inputType)
         {
             var input = DefaultArrayInit(inputType);
-
+            decimal result = 1;
+            decimal tempResult = 1;
+            var lastMax = (value: double.MinValue, index: 0);
+            for (int i = 0; i < input.Length; i++)            
+            {
+                if ( lastMax.value <= input[i])
+                {
+                    lastMax = (input[i], i);
+                    result = tempResult;
+                }
+                tempResult *= (decimal)input[i];
+            }
+            Custom.WriteColored(((lastMax.index == 0) 
+                                ? "Перший елемент максимальний, добуток чисел перед останім входженням максимального елементу не існує" 
+                                : $"Добуток чисел перед останнім входженням максимального числа:\n{result}") 
+                                + "\n", White);
         }
         public void Task2(byte inputType)
         {
@@ -321,7 +352,8 @@ namespace Lab4
         static void Main()
         {
             Console.OutputEncoding = System.Text.Encoding.Unicode;
-            while (true) StartTask(SelectArrayMethodsUsage(), SelectTask(), SelectInputType());
+            //while (true) StartTask(SelectArrayMethodsUsage(), SelectTask(), SelectInputType());
+            while (true) StartTask(2,1,1);
         }
     }
 }
