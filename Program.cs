@@ -253,7 +253,7 @@ namespace Lab4
     }
     static class Other
     {
-        public class BigDouble
+        public struct BigDouble
         {
             public BigInteger Mantissa { get; private set; }
             public BigInteger Exponent { get; private set; }
@@ -294,7 +294,15 @@ namespace Lab4
                 else
                     return $"{Mantissa}e{Exponent}";
             }
-
+            public override bool Equals(object obj)
+            {
+                if (obj is BigDouble other)
+                {
+                    return this == other;
+                }
+                return false;
+            }
+            public override int GetHashCode() => HashCode.Combine(Mantissa, Exponent);
             public static BigDouble operator +(BigDouble a, BigDouble b)
             {
                 if (a.Exponent == b.Exponent)
@@ -338,6 +346,57 @@ namespace Lab4
             public static BigDouble operator *(BigDouble a, BigDouble b) => new BigDouble(a.Mantissa * b.Mantissa, a.Exponent + b.Exponent);
             public static BigDouble operator *(BigDouble a, double b) => a * FromDouble(b);
             public static BigDouble operator *(double a, BigDouble b) => FromDouble(a) * b;
+
+            public static bool operator ==(BigDouble a, BigDouble b)
+            {
+                if (a.Exponent == b.Exponent)
+                    return a.Mantissa == b.Mantissa;
+
+                BigInteger shift = BigInteger.Pow(10, (int)Math.Abs((double)(a.Exponent - b.Exponent)));
+
+                if (a.Exponent > b.Exponent)
+                    return a.Mantissa == b.Mantissa * shift;
+                else
+                    return a.Mantissa * shift == b.Mantissa;
+            }
+            public static bool operator ==(BigDouble a, double b) => a == FromDouble(b);
+            public static bool operator ==(double a, BigDouble b) => FromDouble(a) == b;
+
+            public static bool operator !=(BigDouble a, BigDouble b) => !(a == b);
+            public static bool operator !=(BigDouble a, double b) => !(a == b);
+            public static bool operator !=(double a, BigDouble b) => !(a == b);
+
+            public static bool operator >(BigDouble a, BigDouble b)
+            {
+                if (a.Exponent == b.Exponent)
+                    return a.Mantissa > b.Mantissa;
+
+                if (a.Exponent > b.Exponent)
+                {
+                    BigInteger shift = BigInteger.Pow(10, (int)(a.Exponent - b.Exponent));
+                    return a.Mantissa > b.Mantissa * shift;
+                }
+                else
+                {
+                    BigInteger shift = BigInteger.Pow(10, (int)(b.Exponent - a.Exponent));
+                    return a.Mantissa * shift > b.Mantissa;
+                }
+            }
+            public static bool operator >(BigDouble a, double b) => a > FromDouble(b);
+            public static bool operator >(double a, BigDouble b) => FromDouble(a) > b;
+
+            public static bool operator <(BigDouble a, BigDouble b) => !(a >= b);
+            public static bool operator <(BigDouble a, double b) => !(a >= b);
+            public static bool operator <(double a, BigDouble b) => !(a >= b);
+
+            public static bool operator >=(BigDouble a, BigDouble b) => a == b || a > b;
+            public static bool operator >=(BigDouble a, double b) => a == b || a > b;
+            public static bool operator >=(double a, BigDouble b) => a == b || a > b;
+
+            public static bool operator <=(BigDouble a, BigDouble b) => a == b || a < b;
+            public static bool operator <=(BigDouble a, double b) => a == b || a < b;
+            public static bool operator <=(double a, BigDouble b) => a == b || a < b;
+
         }
         public delegate void Task(byte inputType);
         public interface ITaskContaiter
@@ -438,6 +497,7 @@ namespace Lab4
     {
         static void Main()
         {
+            new BigDouble(16,-1) == 1.6;
             Console.OutputEncoding = System.Text.Encoding.Unicode;
             while (true) StartTask(SelectArrayMethodsUsage(), SelectTask(), SelectInputType());
         }
