@@ -61,7 +61,7 @@ namespace Lab4
         }
     }
     class ArrayMethodLessRealization : ITaskContaiter
-    {        
+    {
         private static double[] DefaultArrayInit(byte inputType)
         {
             double[] output = [];
@@ -201,18 +201,18 @@ namespace Lab4
             BigDouble result = new(1, 0);
             BigDouble tempResult = new(1, 0);
             var lastMax = (value: double.MinValue, index: 0);
-            for (int i = 0; i < input.Length; i++)            
+            for (int i = 0; i < input.Length; i++)
             {
-                if ( lastMax.value <= input[i])
+                if (lastMax.value <= input[i])
                 {
                     lastMax = (input[i], i);
                     result = tempResult;
                 }
                 tempResult *= input[i];
             }
-            Custom.WriteColored(((lastMax.index == 0) 
-                                ? "Перший елемент максимальний, добуток чисел перед останім входженням максимального елементу не існує" 
-                                : $"Добуток чисел перед останнім входженням максимального числа:\n{result}") 
+            Custom.WriteColored(((lastMax.index == 0)
+                                ? "Перший елемент максимальний, добуток чисел перед останім входженням максимального елементу не існує"
+                                : $"Добуток чисел перед останнім входженням максимального числа:\n{result}")
                                 + "\n", White);
         }
         public void Task2(byte inputType)
@@ -255,7 +255,7 @@ namespace Lab4
     {
         public class BigDouble
         {
-            public BigInteger Mantissa { get; private set;}
+            public BigInteger Mantissa { get; private set; }
             public BigInteger Exponent { get; private set; }
             public BigDouble(BigInteger mantissa, BigInteger exponent) => (Mantissa, Exponent) = (mantissa, exponent);
             public static BigDouble FromDouble(double value)
@@ -267,7 +267,7 @@ namespace Lab4
                 var valueStrSplit = valueStr.Split('e', 'E');
                 var result = (mantissa: double.Parse(valueStrSplit[0]), exponent: int.Parse(valueStrSplit[1]));
                 string[] parts = valueStrSplit[0].Split('.', ',');
-                if (parts.Length == 1) return new((BigInteger)result.mantissa,0);
+                if (parts.Length == 1) return new((BigInteger)result.mantissa * BigInteger.Pow(10, result.exponent), 0);
                 result.mantissa = double.Parse(parts[0] + parts[1]);
                 int decimalPlaces = parts[1].Length;
                 result.exponent += -decimalPlaces;
@@ -280,11 +280,11 @@ namespace Lab4
                     return $"{Mantissa}";
                 else if (Exponent > 0)
                     return $"{Mantissa * BigInteger.Pow(10, (int)Exponent)}";
-                else if (Exponent < 0) 
+                else if (Exponent < 0)
                 {
                     string output = "";
                     var mantissaChars = Mantissa.ToString();
-                    for (int i = 0; i < mantissaChars.Length+Exponent; i++)                     
+                    for (int i = 0; i < mantissaChars.Length + Exponent; i++)
                         output += $"{mantissaChars[i]}";
                     output += ".";
                     for (int i = (int)(mantissaChars.Length + Exponent); i < mantissaChars.Length; i++)
@@ -293,7 +293,6 @@ namespace Lab4
                 }
                 else
                     return $"{Mantissa}e{Exponent}";
-                
             }
 
             public static BigDouble operator +(BigDouble a, BigDouble b)
