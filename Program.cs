@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 using static System.ConsoleColor;
 using static Lab4.Other;
 using AMFR = Lab4.ArrayMethodFulRealization;
@@ -84,8 +85,8 @@ namespace Lab4
         public void Task1(byte inputType)
         {
             var input = DefaultArrayInit(inputType);
-            decimal result = 1;
-            decimal tempResult = 1;
+            BigDouble result = new(1, 0);
+            BigDouble tempResult = new(1, 0);
             var lastMax = (value: double.MinValue, index: 0);
             for (int i = 0; i < input.Length; i++)
             {
@@ -94,7 +95,7 @@ namespace Lab4
                     lastMax = (input[i], i);
                     result = tempResult;
                 }
-                tempResult *= (decimal)input[i];
+                tempResult *= input[i];
             }
             Custom.WriteColored(((lastMax.index == 0)
                                 ? "Перший елемент максимальний, добуток чисел перед останім входженням максимального елементу не існує"
@@ -197,8 +198,8 @@ namespace Lab4
         public void Task1(byte inputType)
         {
             var input = DefaultArrayInit(inputType);
-            decimal result = 1;
-            decimal tempResult = 1;
+            BigDouble result = new(1, 0);
+            BigDouble tempResult = new(1, 0);
             var lastMax = (value: double.MinValue, index: 0);
             for (int i = 0; i < input.Length; i++)            
             {
@@ -207,7 +208,7 @@ namespace Lab4
                     lastMax = (input[i], i);
                     result = tempResult;
                 }
-                tempResult *= (decimal)input[i];
+                tempResult *= input[i];
             }
             Custom.WriteColored(((lastMax.index == 0) 
                                 ? "Перший елемент максимальний, добуток чисел перед останім входженням максимального елементу не існує" 
@@ -252,6 +253,93 @@ namespace Lab4
     }
     static class Other
     {
+        public class BigDouble
+        {
+            public BigInteger Mantissa { get; private set;}
+            public BigInteger Exponent { get; private set; }
+            public BigDouble(BigInteger mantissa, BigInteger exponent) => (Mantissa, Exponent) = (mantissa, exponent);
+            public static BigDouble FromDouble(double value)
+            {
+                if (value == 0) return new(0, 0);
+                bool isNegative = value < 0;
+                value = Math.Abs(value);
+                string valueStr = value.ToString("0.#######################################################E+00");
+                var valueStrSplit = valueStr.Split('e', 'E');
+                var result = (mantissa: double.Parse(valueStrSplit[0]), exponent: int.Parse(valueStrSplit[1]));
+                string[] parts = valueStrSplit[0].Split('.', ',');
+                if (parts.Length == 1) return new((BigInteger)result.mantissa,0);
+                result.mantissa = double.Parse(parts[0] + parts[1]);
+                int decimalPlaces = parts[1].Length;
+                result.exponent += -decimalPlaces;
+                if (isNegative) result.mantissa = -result.mantissa;
+                return new BigDouble((BigInteger)result.mantissa, result.exponent);
+            }
+            public override string ToString()
+            {
+                if (Exponent == 0)
+                    return $"{Mantissa}";
+                else if (Exponent > 0)
+                    return $"{Mantissa * BigInteger.Pow(10, (int)Exponent)}";
+                else if (Exponent < 0) 
+                {
+                    string output = "";
+                    var mantissaChars = Mantissa.ToString();
+                    for (int i = 0; i < mantissaChars.Length+Exponent; i++)                     
+                        output += $"{mantissaChars[i]}";
+                    output += ".";
+                    for (int i = (int)(mantissaChars.Length + Exponent); i < mantissaChars.Length; i++)
+                        output += $"{mantissaChars[i]}";
+                    return output;
+                }
+                else
+                    return $"{Mantissa}e{Exponent}";
+                
+            }
+
+            public static BigDouble operator +(BigDouble a, BigDouble b)
+            {
+                if (a.Exponent == b.Exponent)
+                    return new BigDouble(a.Mantissa + b.Mantissa, a.Exponent);
+                else if (a.Exponent > b.Exponent)
+                {
+                    BigInteger shift = BigInteger.Pow(10, (int)(a.Exponent - b.Exponent));
+                    return new BigDouble(a.Mantissa + b.Mantissa * shift, a.Exponent);
+                }
+                else
+                {
+                    BigInteger shift = BigInteger.Pow(10, (int)(b.Exponent - a.Exponent));
+                    return new BigDouble(a.Mantissa * shift + b.Mantissa, b.Exponent);
+                }
+            }
+            public static BigDouble operator +(BigDouble a, double b) => a + FromDouble(b);
+            public static BigDouble operator +(double a, BigDouble b) => FromDouble(a) + b;
+
+            public static BigDouble operator -(BigDouble a, BigDouble b)
+            {
+                if (a.Exponent == b.Exponent)
+                    return new BigDouble(a.Mantissa - b.Mantissa, a.Exponent);
+                else if (a.Exponent > b.Exponent)
+                {
+                    BigInteger shift = BigInteger.Pow(10, (int)(a.Exponent - b.Exponent));
+                    return new BigDouble(a.Mantissa - b.Mantissa * shift, a.Exponent);
+                }
+                else
+                {
+                    BigInteger shift = BigInteger.Pow(10, (int)(b.Exponent - a.Exponent));
+                    return new BigDouble(a.Mantissa * shift - b.Mantissa, b.Exponent);
+                }
+            }
+            public static BigDouble operator -(BigDouble a, double b) => a - FromDouble(b);
+            public static BigDouble operator -(double a, BigDouble b) => FromDouble(a) - b;
+
+            public static BigDouble operator /(BigDouble a, BigDouble b) => new BigDouble(a.Mantissa / b.Mantissa, a.Exponent - b.Exponent);
+            public static BigDouble operator /(BigDouble a, double b) => a / FromDouble(b);
+            public static BigDouble operator /(double a, BigDouble b) => FromDouble(a) / b;
+
+            public static BigDouble operator *(BigDouble a, BigDouble b) => new BigDouble(a.Mantissa * b.Mantissa, a.Exponent + b.Exponent);
+            public static BigDouble operator *(BigDouble a, double b) => a * FromDouble(b);
+            public static BigDouble operator *(double a, BigDouble b) => FromDouble(a) * b;
+        }
         public delegate void Task(byte inputType);
         public interface ITaskContaiter
         {
@@ -322,13 +410,13 @@ namespace Lab4
         {
             ITaskContaiter TaskContainer = (arrayMethodsUsage == 1) ? new AMLR() : new AMFR();
             Custom.WriteColored(
-                "Запускаю задачу ", White, $"{taskNum} ", Yellow,
+                "\nЗапускаю задачу ", White, $"{taskNum} ", Yellow,
                 ((arrayMethodsUsage == 0) ? "без використання " : "з використанням ") + "методів класу System.", White, "Array ", DarkGreen,
                 "та використанням " + inputType switch
                 {
-                    1 => "випадкового заповнення.\n\n",
-                    2 => "заповнення в рядок.\n\n",
-                    3 => "заповнення в стовпчик.\n\n",
+                    1 => "випадкового заповнення.\n",
+                    2 => "заповнення в рядок.\n",
+                    3 => "заповнення в стовпчик.\n",
                     _ => throw new NotImplementedException("Something went wrong")
                 }, White);
             Task task = taskNum switch
@@ -352,8 +440,7 @@ namespace Lab4
         static void Main()
         {
             Console.OutputEncoding = System.Text.Encoding.Unicode;
-            //while (true) StartTask(SelectArrayMethodsUsage(), SelectTask(), SelectInputType());
-            while (true) StartTask(2,1,1);
+            while (true) StartTask(SelectArrayMethodsUsage(), SelectTask(), SelectInputType());
         }
     }
 }
