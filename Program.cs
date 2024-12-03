@@ -61,10 +61,10 @@ namespace Lab4
             Console.ResetColor();
         }
     }
-    abstract class DefaultArrayInit 
+    abstract class DefaultArrayInit
     {
-        protected double[] Init(byte inputType) => inputType switch {1 => InitRand(), 2 => InitInLine(), 3 => InitInColon(), _ => [] };   
-        protected virtual double[] InitRand() 
+        protected double[] Init(byte inputType) => inputType switch { 1 => InitRand(), 2 => InitInLine(), 3 => InitInColon(), _ => [] };
+        protected virtual double[] InitRand()
         {
             double[] output = [];
             uint num;
@@ -73,11 +73,11 @@ namespace Lab4
                 Custom.WriteColored("Введіть кількість елементів масиву для генерації масиву з елементами від -1000 до 1000:\n", White);
                 num = Custom.ReadLine(uint.Parse, true, "Неправильний тип введення", Red, Yellow, true);
                 Custom.WriteColored("Використовувати лише цілі числа?:\n", White,
-                                    "0", Yellow, " - ні (кількість знаків після коми між 0 та 7).\n", White,
-                                    "1", Yellow, " - так.\n", White);
+                                    "1", Yellow, " - так.\n", White,
+                                    "2", Yellow, " - ні (кількість знаків після коми між 0 та 7).\n", White);
                 var rnNumType = Custom.ReadLine(uint.Parse, true, "Неправильний тип введення", Red, Yellow, true);
                 var rn = new Random();
-                Func<double> random = (rnNumType == 0) ? () => Math.Round((rn.NextDouble() * 2000) - 1000, rn.Next(7)) : () => rn.Next(-1000, 1000);
+                Func<double> random = (rnNumType == 2) ? () => Math.Round((rn.NextDouble() * 2000) - 1000, rn.Next(7)) : () => rn.Next(-1000, 1000);
                 output = new double[num];
                 for (int i = 0; i < num; i++)
                     output[i] = random();
@@ -86,23 +86,29 @@ namespace Lab4
             while (num == 0);
             return output;
         }
-        protected virtual double[] InitInLine() 
-        {                                    
+        protected virtual double[] InitInLine()
+        {
             double[] output;
-            var input = Custom.ReadLine(White, true).Split(' ', '\t');
-            output = new double[input.Length];
-            for (int i = 0; i < input.Length; i++)
-                output[i] = double.Parse(input[i]);
+            while (true)
+                try
+                {
+                    var input = Custom.ReadLine(Yellow, true).Split(' ', '\t');
+                    output = new double[input.Length];
+                    for (int i = 0; i < input.Length; i++)
+                        output[i] = double.Parse(input[i]);
+                    break;
+                }
+                catch { Custom.WriteColored("Неправильний тип введення\n", Red); }
             return output;
         }
-        protected virtual double[] InitInColon() 
+        protected virtual double[] InitInColon()
         {
             double[] output = [];
             uint num;
-            input:
-                Custom.WriteColored("Введіть кількість елементів масиву:\n", White);
-                num = Custom.ReadLine(uint.Parse, true, "Неправильний тип введення", Red, Yellow, true);
-            if (num == 0) 
+        input:
+            Custom.WriteColored("Введіть кількість елементів масиву:\n", White);
+            num = Custom.ReadLine(uint.Parse, true, "Неправильний тип введення", Red, Yellow, true);
+            if (num == 0)
             {
                 Custom.WriteColored("Неправильний тип введення\n", Red);
                 goto input;
@@ -110,7 +116,7 @@ namespace Lab4
             Custom.WriteColored("Введіть послідовно елементи масиву через ", White, "Enter", Yellow, ":\n", White);
             output = new double[num];
             for (int i = 0; i < num; i++)
-            {            
+            {
                 try
                 {
                     Custom.WriteColored($"{i + 1}: ", White);
@@ -126,7 +132,7 @@ namespace Lab4
         }
     }
     class ArrayMethodLessRealization : DefaultArrayInit, ITaskContaiter
-    {        
+    {
         public void Task1(byte inputType)
         {
             var input = Init(inputType);
@@ -150,7 +156,25 @@ namespace Lab4
         public void Task2(byte inputType)
         {
             var input = Init(inputType);
-
+            double targetValue = double.MaxValue;
+            Custom.WriteColored("Введіть число K\n", White);
+            int k = Custom.ReadLine(int.Parse, true, "Неправильний тип введення", Red, Yellow, true);
+            for (int i = 0; i < k; i++)
+            {
+                double currentMax = double.MinValue;
+                for (int j = 0; j < input.Length; j++)                
+                    if (input[j] > currentMax && input[j] < targetValue)                    
+                        currentMax = input[j];                                    
+                targetValue = currentMax;
+            }        
+            int position = -1;
+            for (int i = 0; i < input.Length; i++)            
+                if (input[i] == targetValue)
+                {
+                    position = i + 1;
+                    break;
+                }
+            Custom.WriteColored("Номер K-го елемента по спаданню: ", White, $"{position}\n", Yellow);
         }
         public void Task3(byte inputType)
         {
@@ -188,7 +212,17 @@ namespace Lab4
         protected override double[] InitInLine()
         {
             Custom.WriteColored("Введіть послідовно елементи масиву через пробіл або/та табуляцію:\n", White);
-            return Array.ConvertAll(Custom.ReadLine(White, true).Split(' ', '\t'), double.Parse);
+            double[] output;
+            while (true)
+            {
+                try
+                {
+                    output = Array.ConvertAll(Custom.ReadLine(White, true).Split(' ', '\t'), double.Parse);
+                    break;
+                }
+                catch { Custom.WriteColored("Неправильний тип введення\n", Red); }
+            }
+            return output;
         }
         public void Task1(byte inputType)
         {
@@ -209,8 +243,14 @@ namespace Lab4
 
         public void Task2(byte inputType)
         {
-            var input = Init(inputType);
-
+            double[] input = Init(inputType);
+            Custom.WriteColored("Введіть число K\n", White);
+            int k = Custom.ReadLine(int.Parse, true, "Неправильний тип введення", Red, Yellow, true);
+            double[] sortedArray = (double[])input.Clone();
+            Array.Sort(sortedArray);
+            Array.Reverse(sortedArray);
+            int position = Array.IndexOf(input, sortedArray[k - 1]) + 1;
+            Custom.WriteColored("Номер K-го елемента по спаданню: ", White, $"{position}\n", Yellow);
         }
         public void Task3(byte inputType)
         {
@@ -247,8 +287,8 @@ namespace Lab4
     {
         public struct BigDouble
         {
-            public BigInteger Mantissa { get; private set; }
-            public BigInteger Exponent { get; private set; }
+            private BigInteger Mantissa { get; set; }
+            private BigInteger Exponent { get; set; }
             public BigDouble(BigInteger mantissa, BigInteger exponent) => (Mantissa, Exponent) = (mantissa, exponent);
             private static BigDouble FromDouble(double value)
             {
@@ -290,9 +330,7 @@ namespace Lab4
             public override bool Equals(object obj)
             {
                 if (obj is BigDouble other)
-                {
                     return this == other;
-                }
                 return false;
             }
             public override int GetHashCode() => HashCode.Combine(Mantissa, Exponent);
@@ -392,7 +430,6 @@ namespace Lab4
             public static bool operator <=(BigDouble a, BigDouble b) => a == b || a < b;
             public static bool operator <=(BigDouble a, double b) => a == b || a < b;
             public static bool operator <=(double a, BigDouble b) => a == b || a < b;
-
         }
         public delegate void Task(byte inputType);
         public interface ITaskContaiter
@@ -427,7 +464,7 @@ namespace Lab4
         {
             Custom.WriteColored("Виберіть задачу:\n", White,
                                 "1", Yellow, " - Знайти добуток елементів масиву, які розміщені перед останнім входженням максимального числа.\n", White,
-                                "2", Yellow, " - Задача Table з netoi.org.ua.\n", White,
+                                "2", Yellow, " - Знайти номер K-го елемента по спаданню.\n", White,
                                 "3", Yellow, " - Задача A «Гра “Вгадай число”» зі змагання «53 Дорішування теми \"Бінарний та тернарний пошуки\".\n", White,
                                 "4", Yellow, " - Задача B «Пошук елементів у масиві–1» зі змагання «53 Дорішування теми \"Бінарний та тернарний пошуки\".\n", White,
                                 "6", Yellow, " - Задача C «Пошук елементів у масиві–2» зі змагання «53 Дорішування теми \"Бінарний та тернарний пошуки\".\n", White,
@@ -494,7 +531,8 @@ namespace Lab4
         static void Main()
         {
             Console.OutputEncoding = System.Text.Encoding.Unicode;
-            while (true) StartTask(SelectArrayMethodsUsage(), SelectTask(), SelectInputType());                
+            while (true) StartTask(SelectArrayMethodsUsage(), SelectTask(), SelectInputType());
+            //StartTask(2, 2, 2);
         }
     }
 }
