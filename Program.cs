@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Numerics;
 using static System.ConsoleColor;
 using static Lab4.Other;
@@ -60,33 +61,77 @@ namespace Lab4
             Console.ResetColor();
         }
     }
-    class ArrayMethodLessRealization : ITaskContaiter
+    abstract class DefaultArrayInit 
     {
-        private static double[] DefaultArrayInit(byte inputType)
+        protected double[] Init(byte inputType) => inputType switch {1 => InitRand(), 2 => InitInLine(), 3 => InitInColon(), _ => [] };   
+        protected virtual double[] InitRand() 
         {
             double[] output = [];
-            switch (inputType)
+            uint num;
+            do
             {
-                case 1:
-                    output = AMFR.DefaultArrayInit(inputType);
-                    break;
-                case 2:
-                    var input = Custom.ReadLine(White, true).Split(' ', '\t');
-                    output = new double[input.Length];
-                    for (int i = 0; i < input.Length; i++)
-                        output[i] = double.Parse(input[i]);
-                    break;
-                case 3:
-                    output = AMFR.DefaultArrayInit(inputType);
-                    break;
+                Custom.WriteColored("Введіть кількість елементів масиву для генерації масиву з елементами від -1000 до 1000:\n", White);
+                num = Custom.ReadLine(uint.Parse, true, "Неправильний тип введення", Red, Yellow, true);
+                Custom.WriteColored("Використовувати лише цілі числа?:\n", White,
+                                    "0", Yellow, " - ні (кількість знаків після коми між 0 та 7).\n", White,
+                                    "1", Yellow, " - так.\n", White);
+                var rnNumType = Custom.ReadLine(uint.Parse, true, "Неправильний тип введення", Red, Yellow, true);
+                var rn = new Random();
+                Func<double> random = (rnNumType == 0) ? () => Math.Round((rn.NextDouble() * 2000) - 1000, rn.Next(7)) : () => rn.Next(-1000, 1000);
+                output = new double[num];
+                for (int i = 0; i < num; i++)
+                    output[i] = random();
+                Custom.WriteColored($"Результат:\n{String.Join(" ", output)}\n", White);
+            }
+            while (num == 0);
+            return output;
+        }
+        protected virtual double[] InitInLine() 
+        {                                    
+            double[] output;
+            var input = Custom.ReadLine(White, true).Split(' ', '\t');
+            output = new double[input.Length];
+            for (int i = 0; i < input.Length; i++)
+                output[i] = double.Parse(input[i]);
+            return output;
+        }
+        protected virtual double[] InitInColon() 
+        {
+            double[] output = [];
+            uint num;
+            input:
+                Custom.WriteColored("Введіть кількість елементів масиву:\n", White);
+                num = Custom.ReadLine(uint.Parse, true, "Неправильний тип введення", Red, Yellow, true);
+            if (num == 0) 
+            {
+                Custom.WriteColored("Неправильний тип введення\n", Red);
+                goto input;
+            }
+            Custom.WriteColored("Введіть послідовно елементи масиву через ", White, "Enter", Yellow, ":\n", White);
+            output = new double[num];
+            for (int i = 0; i < num; i++)
+            {            
+                try
+                {
+                    Custom.WriteColored($"{i + 1}: ", White);
+                    output[i] = Custom.ReadLine(double.Parse, false, Yellow);
+                }
+                catch (Exception e) when (e is ArgumentException)
+                {
+                    Custom.WriteColored("Неправильний тип введення\n", Red);
+                    i--;
+                }
             }
             return output;
         }
+    }
+    class ArrayMethodLessRealization : DefaultArrayInit, ITaskContaiter
+    {        
         public void Task1(byte inputType)
         {
-            var input = DefaultArrayInit(inputType);
-            BigDouble result = new(1, 0);
-            BigDouble tempResult = new(1, 0);
+            var input = Init(inputType);
+            BigDouble result = 1;
+            BigDouble tempResult = 1;
             var lastMax = (value: double.MinValue, index: 0);
             for (int i = 0; i < input.Length; i++)
             {
@@ -104,150 +149,97 @@ namespace Lab4
         }
         public void Task2(byte inputType)
         {
-            var input = DefaultArrayInit(inputType);
+            var input = Init(inputType);
 
         }
         public void Task3(byte inputType)
         {
-            var input = DefaultArrayInit(inputType);
+            var input = Init(inputType);
 
         }
         public void Task4(byte inputType)
         {
-            var input = DefaultArrayInit(inputType);
+            var input = Init(inputType);
 
         }
         public void Task5(byte inputType)
         {
-            var input = DefaultArrayInit(inputType);
+            var input = Init(inputType);
 
         }
         public void Task6(byte inputType)
         {
-            var input = DefaultArrayInit(inputType);
+            var input = Init(inputType);
 
         }
         public void Task7(byte inputType)
         {
-            var input = DefaultArrayInit(inputType);
+            var input = Init(inputType);
 
         }
         public void Task8(byte inputType)
         {
-            var input = DefaultArrayInit(inputType);
+            var input = Init(inputType);
 
         }
     }
-    class ArrayMethodFulRealization : ITaskContaiter
+    class ArrayMethodFulRealization : DefaultArrayInit, ITaskContaiter
     {
-        public static double[] DefaultArrayInit(byte inputType)
+        protected override double[] InitInLine()
         {
-            double[] output = [];
-            switch (inputType)
-            {
-                case 1:
-                    uint num;
-                    do
-                    {
-                        Custom.WriteColored("Введіть кількість елементів масиву для генерації масиву з елементами від -1000 до 1000:\n", White);
-                        num = Custom.ReadLine(uint.Parse, true, "Неправильний тип введення", Red, Yellow, true);
-                        Custom.WriteColored("Використовувати лише цілі числа?:\n", White,
-                                            "0", Yellow, " - ні (кількість знаків після коми між 0 та 7).\n", White,
-                                            "1", Yellow, " - так.\n", White);
-                        var rnNumType = Custom.ReadLine(uint.Parse, true, "Неправильний тип введення", Red, Yellow, true);
-                        var rn = new Random();
-                        Func<double> random = (rnNumType == 0) ? () => Math.Round((rn.NextDouble() * 2000) - 1000, rn.Next(7)) : () => rn.Next(-1000, 1000);
-                        output = new double[num];
-                        for (int i = 0; i < num; i++)
-                            output[i] = random();
-                        Custom.WriteColored($"Результат:\n{String.Join(" ", output)}\n", White);
-                    }
-                    while (num == 0);
-                    break;
-                case 2:
-                    Custom.WriteColored("Введіть послідовно елементи масиву через пробіл або/та табуляцію:\n", White);
-                    output = Array.ConvertAll(Custom.ReadLine(White, true).Split(' ', '\t'), double.Parse);
-                    break;
-                case 3:
-                    do
-                    {
-                        Custom.WriteColored("Введіть кількість елементів масиву:\n", White);
-                        num = Custom.ReadLine(uint.Parse, true, "Неправильний тип введення", Red, Yellow, true);
-                    }
-                    while (num == 0);
-                    Custom.WriteColored("Введіть послідовно елементи масиву через ", White, "Enter", Yellow, ":\n", White);
-                    output = new double[num];
-                    for (int i = 0; i < num; i++)
-                    {
-                    start:
-                        try
-                        {
-                            Custom.WriteColored($"{i + 1}: ", White);
-                            output[i] = Custom.ReadLine(double.Parse, false, Yellow);
-                        }
-                        catch (Exception e) when (e is ArgumentException)
-                        {
-                            Custom.WriteColored("Неправильний тип введення\n", Red);
-                            goto start;
-                        }
-                    }
-                    break;
-            }
-            return output;
+            Custom.WriteColored("Введіть послідовно елементи масиву через пробіл або/та табуляцію:\n", White);
+            return Array.ConvertAll(Custom.ReadLine(White, true).Split(' ', '\t'), double.Parse);
         }
         public void Task1(byte inputType)
         {
-            var input = DefaultArrayInit(inputType);
-            BigDouble result = new(1, 0);
-            BigDouble tempResult = new(1, 0);
-            var lastMax = (value: double.MinValue, index: 0);
-            for (int i = 0; i < input.Length; i++)
+            var input = Init(inputType);
+            double maxValue = input.Max();
+            int maxIndex = Array.FindLastIndex(input, input.Length - 1, input.Length, x => x == maxValue);
+            if (maxIndex == 0)
             {
-                if (lastMax.value <= input[i])
-                {
-                    lastMax = (input[i], i);
-                    result = tempResult;
-                }
-                tempResult *= input[i];
+                Custom.WriteColored("Перший елемент максимальний, добуток чисел перед останнім входженням максимального елементу не існує\n", White);
+                return;
             }
-            Custom.WriteColored(((lastMax.index == 0)
-                                ? "Перший елемент максимальний, добуток чисел перед останім входженням максимального елементу не існує"
-                                : $"Добуток чисел перед останнім входженням максимального числа:\n{result}")
-                                + "\n", White);
+            double[] trimmedArray = new double[maxIndex];
+            Array.Copy(input, trimmedArray, maxIndex);
+            BigDouble result = 1;
+            Array.ForEach(trimmedArray, x => result *= x);
+            Custom.WriteColored($"Добуток чисел перед останнім входженням максимального числа:\n{result}\n", White);
         }
+
         public void Task2(byte inputType)
         {
-            var input = DefaultArrayInit(inputType);
+            var input = Init(inputType);
 
         }
         public void Task3(byte inputType)
         {
-            var input = DefaultArrayInit(inputType);
+            var input = Init(inputType);
 
         }
         public void Task4(byte inputType)
         {
-            var input = DefaultArrayInit(inputType);
+            var input = Init(inputType);
 
         }
         public void Task5(byte inputType)
         {
-            var input = DefaultArrayInit(inputType);
+            var input = Init(inputType);
 
         }
         public void Task6(byte inputType)
         {
-            var input = DefaultArrayInit(inputType);
+            var input = Init(inputType);
 
         }
         public void Task7(byte inputType)
         {
-            var input = DefaultArrayInit(inputType);
+            var input = Init(inputType);
 
         }
         public void Task8(byte inputType)
         {
-            var input = DefaultArrayInit(inputType);
+            var input = Init(inputType);
 
         }
     }
@@ -258,9 +250,9 @@ namespace Lab4
             public BigInteger Mantissa { get; private set; }
             public BigInteger Exponent { get; private set; }
             public BigDouble(BigInteger mantissa, BigInteger exponent) => (Mantissa, Exponent) = (mantissa, exponent);
-            public static BigDouble FromDouble(double value)
+            private static BigDouble FromDouble(double value)
             {
-                if (value == 0) return new(0, 0);
+                if (value == 0) return 0;
                 bool isNegative = value < 0;
                 value = Math.Abs(value);
                 string valueStr = value.ToString("0.#######################################################E+00");
@@ -274,6 +266,7 @@ namespace Lab4
                 if (isNegative) result.mantissa = -result.mantissa;
                 return new BigDouble((BigInteger)result.mantissa, result.exponent);
             }
+
             public override string ToString()
             {
                 if (Exponent == 0)
@@ -303,6 +296,9 @@ namespace Lab4
                 return false;
             }
             public override int GetHashCode() => HashCode.Combine(Mantissa, Exponent);
+
+            public static implicit operator BigDouble(double value) => FromDouble(value);
+
             public static BigDouble operator +(BigDouble a, BigDouble b)
             {
                 if (a.Exponent == b.Exponent)
@@ -498,7 +494,7 @@ namespace Lab4
         static void Main()
         {
             Console.OutputEncoding = System.Text.Encoding.Unicode;
-            while (true) StartTask(SelectArrayMethodsUsage(), SelectTask(), SelectInputType());
+            while (true) StartTask(SelectArrayMethodsUsage(), SelectTask(), SelectInputType());                
         }
     }
 }
