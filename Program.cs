@@ -116,7 +116,6 @@ namespace Lab4
             Custom.WriteColored("Введіть послідовно елементи масиву через ", White, "Enter", Yellow, ":\n", White);
             output = new double[num];
             for (int i = 0; i < num; i++)
-            {
                 try
                 {
                     Custom.WriteColored($"{i + 1}: ", White);
@@ -127,7 +126,6 @@ namespace Lab4
                     Custom.WriteColored("Неправильний тип введення\n", Red);
                     i--;
                 }
-            }
             return output;
         }
     }
@@ -162,13 +160,13 @@ namespace Lab4
             for (int i = 0; i < k; i++)
             {
                 double currentMax = double.MinValue;
-                for (int j = 0; j < input.Length; j++)                
-                    if (input[j] > currentMax && input[j] < targetValue)                    
-                        currentMax = input[j];                                    
+                for (int j = 0; j < input.Length; j++)
+                    if (input[j] > currentMax && input[j] < targetValue)
+                        currentMax = input[j];
                 targetValue = currentMax;
-            }        
+            }
             int position = -1;
-            for (int i = 0; i < input.Length; i++)            
+            for (int i = 0; i < input.Length; i++)
                 if (input[i] == targetValue)
                 {
                     position = i + 1;
@@ -178,8 +176,61 @@ namespace Lab4
         }
         public void Task3(byte inputType)
         {
-            var input = Init(inputType);
-
+            var input = new long[2];
+            switch (inputType)
+            {
+                case 1:
+                    var rn = new Random();
+                    input[0] = rn.Next(-2000000000, 2000000000);
+                    input[1] = rn.Next((int)input[0], 2000000000);
+                    Custom.WriteColored($"{String.Join(" ", input)}\n", White);
+                    break;
+                case 2:
+                    while (true)
+                        try
+                        {
+                            while (true)
+                            {
+                                var temp = Custom.ReadLine(Yellow, true).Split(' ');
+                                input[0] = long.Parse(temp[0]);
+                                input[1] = long.Parse(temp[1]);
+                                if (input[1] >= input[0]) break;
+                                Custom.WriteColored("Друга межа має бути більшою\n", Red);
+                            }
+                            break;
+                        }
+                        catch { Custom.WriteColored("Неправильний тип введення\n", Red); }
+                    break;
+                case 3:
+                    Custom.WriteColored("Введіть першу межу:\n", White);
+                    input[0] = Custom.ReadLine(long.Parse, true, "Неправильний тип введення", Red, Yellow, true);
+                    Custom.WriteColored("Введіть другу межу:\n", White);
+                    while (true)
+                    {
+                        input[1] = Custom.ReadLine(long.Parse, true, "Неправильний тип введення", Red, Yellow, true);
+                        if (input[1] >= input[0]) break;
+                        Custom.WriteColored("Друга межа має бути більшою\n", Red);
+                    }
+                    break;
+            }
+            var (answer, num) = ("", 0L);
+            input[0]--; input[1]++;
+            for (int i = 1; answer != "=" && i <= 50; i++)
+            {
+                num = (input[1] - input[0]) / 2 + input[0];
+                Custom.WriteColored($"Ваше число {num}?\n", White);
+                answer = Custom.ReadLine(White);
+                switch (answer)
+                {
+                    case "-":
+                        input[1] = num;
+                        break;
+                    case "+":
+                        input[0] = num;
+                        break;
+                }
+            }
+            Console.WriteLine($"Відповідь {num}");
         }
         public void Task4(byte inputType)
         {
@@ -214,14 +265,12 @@ namespace Lab4
             Custom.WriteColored("Введіть послідовно елементи масиву через пробіл або/та табуляцію:\n", White);
             double[] output;
             while (true)
-            {
                 try
                 {
                     output = Array.ConvertAll(Custom.ReadLine(White, true).Split(' ', '\t'), double.Parse);
                     break;
                 }
                 catch { Custom.WriteColored("Неправильний тип введення\n", Red); }
-            }
             return output;
         }
         public void Task1(byte inputType)
@@ -240,7 +289,6 @@ namespace Lab4
             Array.ForEach(trimmedArray, x => result *= x);
             Custom.WriteColored($"Добуток чисел перед останнім входженням максимального числа:\n{result}\n", White);
         }
-
         public void Task2(byte inputType)
         {
             double[] input = Init(inputType);
@@ -254,8 +302,59 @@ namespace Lab4
         }
         public void Task3(byte inputType)
         {
-            var input = Init(inputType);
-
+            var input = new long[2];
+            switch (inputType)
+            {
+                case 1:
+                    var rn = new Random();
+                    input[0] = rn.Next(-2000000000, 2000000000);
+                    input[1] = rn.Next((int)input[0], 2000000000);
+                    Custom.WriteColored($"{String.Join(" ", input)}\n", White);
+                    break;
+                case 2:
+                    while (true)
+                        try
+                        {
+                            while (true)
+                            {
+                                input = Array.ConvertAll(Custom.ReadLine(Yellow, true).Split(' '), long.Parse);
+                                if (input[1] >= input[0]) break;
+                                Custom.WriteColored("Друга межа має бути більшою\n", Red);
+                            }
+                            break;
+                        }
+                        catch { Custom.WriteColored("Неправильний тип введення\n", Red); }
+                    break;
+                case 3:
+                    Custom.WriteColored("Введіть першу межу:\n", White);
+                    input[0] = Custom.ReadLine(long.Parse, true, "Неправильний тип введення", Red, Yellow, true);
+                    Custom.WriteColored("Введіть другу межу:\n", White);
+                    while (true)
+                    {
+                        input[1] = Custom.ReadLine(long.Parse, true, "Неправильний тип введення", Red, Yellow, true);
+                        if (input[1] >= input[0]) break;
+                        Custom.WriteColored("Друга межа має бути більшою\n", Red);
+                    }
+                    break;
+            }
+            var (answer, num) = ("", 0L);
+            input[0]--; input[1]++;
+            for (int i = 1; answer != "=" && i <= 50; i++)
+            {
+                num = (input[1] - input[0]) / 2 + input[0];
+                Custom.WriteColored($"Ваше число {num}?\n", White);
+                answer = Custom.ReadLine(White);
+                switch (answer)
+                {
+                    case "-":
+                        input[1] = num;
+                        break;
+                    case "+":
+                        input[0] = num;
+                        break;
+                }
+            }
+            Console.WriteLine($"Відповідь {num}");
         }
         public void Task4(byte inputType)
         {
@@ -283,7 +382,7 @@ namespace Lab4
 
         }
     }
-    static class Other
+    public static class Other
     {
         public struct BigDouble
         {
@@ -532,7 +631,6 @@ namespace Lab4
         {
             Console.OutputEncoding = System.Text.Encoding.Unicode;
             while (true) StartTask(SelectArrayMethodsUsage(), SelectTask(), SelectInputType());
-            //StartTask(2, 2, 2);
         }
     }
 }
