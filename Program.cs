@@ -61,12 +61,12 @@ namespace Lab4
             Console.ResetColor();
         }
     }
-    abstract class DefaultArrayInit
+    abstract class ArrayInit
     {
-        protected double[] Init(byte inputType) => inputType switch { 1 => InitRand(), 2 => InitInLine(), 3 => InitInColon(), _ => [] };
-        protected virtual double[] InitRand()
+        protected T[] Init<T>(byte inputType, byte forTask = 0) where T : struct, IConvertible => inputType switch { 1 => InitRand<T>(forTask), 2 => InitInLine<T>(forTask), 3 => InitInColon<T>(forTask), _ => [] };
+        protected virtual T[] InitRand<T>(byte forTask) where T : IConvertible
         {
-            double[] output = [];
+            T[] output = [];
             uint num;
             do
             {
@@ -77,8 +77,8 @@ namespace Lab4
                                     "2", Yellow, " - ні (кількість знаків після коми між 0 та 7).\n", White);
                 var rnNumType = Custom.ReadLine(uint.Parse, true, "Неправильний тип введення", Red, Yellow, true);
                 var rn = new Random();
-                Func<double> random = (rnNumType == 2) ? () => Math.Round((rn.NextDouble() * 2000) - 1000, rn.Next(7)) : () => rn.Next(-1000, 1000);
-                output = new double[num];
+                Func<T> random = (rnNumType == 2) ? () => (T)Convert.ChangeType(Math.Round((rn.NextDouble() * 2000) - 1000, rn.Next(7)), typeof(T)) : () => (T)Convert.ChangeType(rn.Next(-1000, 1000), typeof(T));
+                output = new T[num];
                 for (int i = 0; i < num; i++)
                     output[i] = random();
                 Custom.WriteColored($"Результат:\n{String.Join(" ", output)}\n", White);
@@ -86,24 +86,24 @@ namespace Lab4
             while (num == 0);
             return output;
         }
-        protected virtual double[] InitInLine()
+        protected virtual T[] InitInLine<T>(byte forTask) where T : IConvertible
         {
-            double[] output;
+            T[] output;
             while (true)
                 try
                 {
                     var input = Custom.ReadLine(Yellow, true).Split(' ', '\t');
-                    output = new double[input.Length];
+                    output = new T[input.Length];
                     for (int i = 0; i < input.Length; i++)
-                        output[i] = double.Parse(input[i]);
+                        output[i] = (T)Convert.ChangeType(double.Parse(input[i]), typeof(T));
                     break;
                 }
                 catch { Custom.WriteColored("Неправильний тип введення\n", Red); }
             return output;
         }
-        protected virtual double[] InitInColon()
+        protected virtual T[] InitInColon<T>(byte forTask) where T : IConvertible
         {
-            double[] output = [];
+            T[] output = [];
             uint num;
         input:
             Custom.WriteColored("Введіть кількість елементів масиву:\n", White);
@@ -114,12 +114,12 @@ namespace Lab4
                 goto input;
             }
             Custom.WriteColored("Введіть послідовно елементи масиву через ", White, "Enter", Yellow, ":\n", White);
-            output = new double[num];
+            output = new T[num];
             for (int i = 0; i < num; i++)
                 try
                 {
                     Custom.WriteColored($"{i + 1}: ", White);
-                    output[i] = Custom.ReadLine(double.Parse, false, Yellow);
+                    output[i] = (T)Convert.ChangeType(Custom.ReadLine(double.Parse, false, Yellow), typeof(T));
                 }
                 catch (Exception e) when (e is ArgumentException)
                 {
@@ -129,11 +129,11 @@ namespace Lab4
             return output;
         }
     }
-    class ArrayMethodLessRealization : DefaultArrayInit, ITaskContaiter
+    class ArrayMethodLessRealization : ArrayInit, ITaskContaiter
     {
         public void Task1(byte inputType)
         {
-            var input = Init(inputType);
+            var input = Init<double>(inputType);
             BigDouble result = 1;
             BigDouble tempResult = 1;
             var lastMax = (value: double.MinValue, index: 0);
@@ -153,7 +153,7 @@ namespace Lab4
         }
         public void Task2(byte inputType)
         {
-            var input = Init(inputType);
+            var input = Init<double>(inputType);
             double targetValue = double.MaxValue;
             Custom.WriteColored("Введіть число K\n", White);
             int k = Custom.ReadLine(int.Parse, true, "Неправильний тип введення", Red, Yellow, true);
@@ -234,48 +234,105 @@ namespace Lab4
         }
         public void Task4(byte inputType)
         {
-            var input = Init(inputType);
+            var input = Init<double>(inputType);
 
         }
         public void Task5(byte inputType)
         {
-            var input = Init(inputType);
+            var input = Init<double>(inputType);
 
         }
         public void Task6(byte inputType)
         {
-            var input = Init(inputType);
+            var input = Init<double>(inputType);
 
         }
         public void Task7(byte inputType)
         {
-            var input = Init(inputType);
+            var input = Init<double>(inputType);
 
         }
         public void Task8(byte inputType)
         {
-            var input = Init(inputType);
+            var input = Init<double>(inputType);
 
         }
     }
-    class ArrayMethodFulRealization : DefaultArrayInit, ITaskContaiter
+    class ArrayMethodFulRealization : ArrayInit, ITaskContaiter
     {
-        protected override double[] InitInLine()
+        protected override T[] InitRand<T>(byte forTask)
         {
-            Custom.WriteColored("Введіть послідовно елементи масиву через пробіл або/та табуляцію:\n", White);
-            double[] output;
-            while (true)
-                try
-                {
-                    output = Array.ConvertAll(Custom.ReadLine(White, true).Split(' ', '\t'), double.Parse);
-                    break;
-                }
-                catch { Custom.WriteColored("Неправильний тип введення\n", Red); }
-            return output;
+            T[] output;
+            switch (forTask)
+            {
+                case 2:
+                    output = new T[2];
+                    var rn = new Random();
+                    output[0] = (T)Convert.ChangeType(rn.Next(-2000000000, 2000000000),typeof(T));
+                    output[1] = (T)Convert.ChangeType(rn.Next((int)Convert.ChangeType(output[0], typeof(T)), 2000000000),typeof(T));
+                    Custom.WriteColored($"{String.Join(" ", output)}\n", White);
+                    return output;
+                default:
+                    return base.InitRand<T>(forTask);
+            }
         }
+        protected override T[] InitInLine<T>(byte forTask)
+        {
+            T[] output;
+            switch (forTask)
+            {              
+                case 2:
+                    output = new T[2];
+                    while (true)
+                        try
+                        {
+                            while (true)
+                            {
+                                output = (T[])Convert.ChangeType( Array.ConvertAll(Custom.ReadLine(Yellow, true).Split(' '), double.Parse), typeof(T[]));
+                                if ((double)Convert.ChangeType(output[1], typeof(T)) >= (double)Convert.ChangeType(output[0], typeof(T))) break;
+                                Custom.WriteColored("Друга межа має бути більшою\n", Red);
+                            }
+                            break;
+                        }
+                        catch { Custom.WriteColored("Неправильний тип введення\n", Red); }
+                    return output;
+                default:
+                    Custom.WriteColored("Введіть послідовно елементи масиву через пробіл або/та табуляцію:\n", White);                    
+                    while (true)
+                        try
+                        {
+                            output = (T[])Convert.ChangeType(Array.ConvertAll(Custom.ReadLine(White, true).Split(' ', '\t'), double.Parse), typeof(T[]));
+                            break;
+                        }
+                        catch { Custom.WriteColored("Неправильний тип введення\n", Red); }
+                    return output;
+            }
+        }
+        protected override T[] InitInColon<T>(byte forTask)
+        {
+            T[] output;
+            switch (forTask)
+            {
+                case 2:
+                    output = new T[2];
+                    Custom.WriteColored("Введіть першу межу:\n", White);
+                    output[0] = (T)Convert.ChangeType(Custom.ReadLine(long.Parse, true, "Неправильний тип введення", Red, Yellow, true), typeof(T));
+                    Custom.WriteColored("Введіть другу межу:\n", White);
+                    while (true)
+                    {
+                        output[1] = (T)Convert.ChangeType(Custom.ReadLine(long.Parse, true, "Неправильний тип введення", Red, Yellow, true), typeof(T));
+                        if ((double)Convert.ChangeType(output[1], typeof(T)) >= (double)Convert.ChangeType(output[0], typeof(T))) break;
+                        Custom.WriteColored("Друга межа має бути більшою\n", Red);
+                    }
+                    return output;
+                default:
+                    return base.InitInColon<T>(forTask);
+            }
+        }
+
         public void Task1(byte inputType)
         {
-            var input = Init(inputType);
+            var input = Init<double>(inputType);
             double maxValue = input.Max();
             int maxIndex = Array.FindLastIndex(input, input.Length - 1, input.Length, x => x == maxValue);
             if (maxIndex == 0)
@@ -291,7 +348,7 @@ namespace Lab4
         }
         public void Task2(byte inputType)
         {
-            double[] input = Init(inputType);
+            double[] input = Init<double>(inputType);
             Custom.WriteColored("Введіть число K\n", White);
             int k = Custom.ReadLine(int.Parse, true, "Неправильний тип введення", Red, Yellow, true);
             double[] sortedArray = (double[])input.Clone();
@@ -302,41 +359,7 @@ namespace Lab4
         }
         public void Task3(byte inputType)
         {
-            var input = new long[2];
-            switch (inputType)
-            {
-                case 1:
-                    var rn = new Random();
-                    input[0] = rn.Next(-2000000000, 2000000000);
-                    input[1] = rn.Next((int)input[0], 2000000000);
-                    Custom.WriteColored($"{String.Join(" ", input)}\n", White);
-                    break;
-                case 2:
-                    while (true)
-                        try
-                        {
-                            while (true)
-                            {
-                                input = Array.ConvertAll(Custom.ReadLine(Yellow, true).Split(' '), long.Parse);
-                                if (input[1] >= input[0]) break;
-                                Custom.WriteColored("Друга межа має бути більшою\n", Red);
-                            }
-                            break;
-                        }
-                        catch { Custom.WriteColored("Неправильний тип введення\n", Red); }
-                    break;
-                case 3:
-                    Custom.WriteColored("Введіть першу межу:\n", White);
-                    input[0] = Custom.ReadLine(long.Parse, true, "Неправильний тип введення", Red, Yellow, true);
-                    Custom.WriteColored("Введіть другу межу:\n", White);
-                    while (true)
-                    {
-                        input[1] = Custom.ReadLine(long.Parse, true, "Неправильний тип введення", Red, Yellow, true);
-                        if (input[1] >= input[0]) break;
-                        Custom.WriteColored("Друга межа має бути більшою\n", Red);
-                    }
-                    break;
-            }
+            long[] input = Init<long>(inputType, 3);            
             var (answer, num) = ("", 0L);
             input[0]--; input[1]++;
             for (int i = 1; answer != "=" && i <= 50; i++)
@@ -358,27 +381,27 @@ namespace Lab4
         }
         public void Task4(byte inputType)
         {
-            var input = Init(inputType);
+            var input = Init<double>(inputType);
 
         }
         public void Task5(byte inputType)
         {
-            var input = Init(inputType);
+            var input = Init<double>(inputType);
 
         }
         public void Task6(byte inputType)
         {
-            var input = Init(inputType);
+            var input = Init<double>(inputType);
 
         }
         public void Task7(byte inputType)
         {
-            var input = Init(inputType);
+            var input = Init<double>(inputType);
 
         }
         public void Task8(byte inputType)
         {
-            var input = Init(inputType);
+            var input = Init<double>(inputType);
 
         }
     }
@@ -628,7 +651,7 @@ namespace Lab4
     internal class Program
     {
         static void Main()
-        {
+        {            
             Console.OutputEncoding = System.Text.Encoding.Unicode;
             while (true) StartTask(SelectArrayMethodsUsage(), SelectTask(), SelectInputType());
         }
