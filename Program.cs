@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using static System.ConsoleColor;
@@ -63,7 +64,14 @@ namespace Lab4
     }
     abstract class ArrayInit
     {
-        protected T[] Init<T>(byte inputType, byte forTask = 0) where T : IConvertible, IComparable => inputType switch { 1 => InitRand<T>(forTask), 2 => InitInLine<T>(forTask), 3 => InitInColon<T>(forTask), _ => [] };
+        protected T[] Init<T>(byte inputType, byte forTask = 0) where T : IConvertible, IComparable =>
+            inputType switch
+            {
+                1 => InitRand<T>(forTask),
+                2 => InitInLine<T>(forTask),
+                3 => InitInColon<T>(forTask),
+                _ => throw new Exception("Somwting went wrong")
+            };
         protected virtual T[] InitRand<T>(byte forTask) where T : IConvertible, IComparable
         {
             T[] output = [];
@@ -89,13 +97,14 @@ namespace Lab4
         protected virtual T[] InitInLine<T>(byte forTask) where T : IConvertible, IComparable
         {
             T[] output;
+            Custom.WriteColored("Введіть послідовно елементи масиву через пробіл або/та табуляцію:\n", White);
             while (true)
                 try
                 {
                     var input = Custom.ReadLine(Yellow, true).Split(' ', '\t');
                     output = new T[input.Length];
                     for (int i = 0; i < input.Length; i++)
-                        output[i] = (T)Convert.ChangeType(double.Parse(input[i]), typeof(T));
+                        output[i] = (T)Convert.ChangeType(input[i], typeof(T));
                     break;
                 }
                 catch { Custom.WriteColored("Неправильний тип введення\n", Red); }
@@ -137,14 +146,28 @@ namespace Lab4
         protected override T[] InitRand<T>(byte forTask)
         {
             T[] output;
+            var rn = new Random();
+            uint num;
             switch (forTask)
             {
                 case 3:
-                    output = new T[2];
-                    var rn = new Random();
+                    output = new T[2];                    
                     output[0] = (T)Convert.ChangeType(rn.Next(-2000000000, 2000000000), typeof(T));
                     output[1] = (T)Convert.ChangeType(rn.Next((int)Convert.ChangeType(output[0], typeof(T)), 2000000000), typeof(T));
                     Custom.WriteColored($"{String.Join(" ", output)}\n", White);
+                    return output;
+                case 4:
+                    do
+                    {
+                        Custom.WriteColored("Введіть кількість елементів масиву для генерації масиву з елементами від -1000000000 до 1000000000:\n", White);
+                        num = Custom.ReadLine(uint.Parse, true, "Неправильний тип введення", Red, Yellow, true);
+                        Func<T> random = () => (T)Convert.ChangeType(rn.Next(-1000000000, 1000000000), typeof(T));
+                        output = new T[num];
+                        for (int i = 0; i < num; i++)
+                            output[i] = random();
+                        Custom.WriteColored($"Результат:\n{String.Join(" ", output)}\n", White);
+                    }
+                    while (num == 0);
                     return output;
                 default:
                     return base.InitRand<T>(forTask);
@@ -162,7 +185,13 @@ namespace Lab4
                         {
                             while (true)
                             {
-                                var temp = Custom.ReadLine(Yellow, true).Split(' ');
+                                Custom.WriteColored("Введіть послідовно елементи масиву через пробіл або/та табуляцію:\n", White);
+                                var temp = Custom.ReadLine(Yellow, true).Split(' ', '\t');
+                                if (temp.Length != 2)
+                                {
+                                    Custom.WriteColored($"Неправильний тип введення\n", Red);
+                                    continue;
+                                }
                                 output[0] = (T)Convert.ChangeType(long.Parse(temp[0]), typeof(T));
                                 output[1] = (T)Convert.ChangeType(long.Parse(temp[1]), typeof(T));
                                 if (output[1].CompareTo(output[0]) >= 0) break;
@@ -173,15 +202,7 @@ namespace Lab4
                         catch { Custom.WriteColored("Неправильний тип введення\n", Red); }
                     return output;
                 default:
-                    Custom.WriteColored("Введіть послідовно елементи масиву через пробіл або/та табуляцію:\n", White);
-                    while (true)
-                        try
-                        {
-                            output = (T[])Convert.ChangeType(Custom.ReadLine(White, true).Split(' ', '\t'), typeof(T[]));
-                            break;
-                        }
-                        catch { Custom.WriteColored("Неправильний тип введення\n", Red); }
-                    return output;
+                    return base.InitInLine<T>(forTask);
             }
         }
         protected override T[] InitInColon<T>(byte forTask)
@@ -277,8 +298,57 @@ namespace Lab4
         }
         public void Task4(byte inputType)
         {
-            var input = Init<double>(inputType);
+            int[] input0;
+            int[] input1;
 
+            input0 = Init<int>(inputType, 4);
+            if (inputType == 1)
+            {
+                int[] GetRandomElements(int[] source)
+                {
+                    Random random = new Random();
+                    int count = random.Next(1, source.Length + 1);
+                    return source.OrderBy(x => random.Next()).Take(count).ToArray();
+                }
+                input1 = GetRandomElements(input0);
+                Custom.WriteColored($"Автоматично згенерований другий масив:\n{String.Join(" ", input1)}\n", White);
+            }
+            else
+            {
+                while (true)
+                {
+                    input1 = Init<int>(inputType, 4);
+                    if (input0.Length < input1.Length)
+                    {
+                        Custom.WriteColored("\nКількість елементів другого масиву не може перевищувати кількість елементів першого\n\n", Red, "Введіть повторно другий масив:\n", White);
+                        continue;
+                    }
+                    break;
+                }
+            }
+
+            void Sort(int[] array)
+            {
+                for (int i = 0; i < array.Length - 1; i++)
+                {
+                    int minIndex = i;
+                    for (int j = i + 1; j < array.Length; j++)                    
+                        if (array[j] < array[minIndex])
+                            minIndex = j;                                   
+                    int temp = array[i];
+                    array[i] = array[minIndex];
+                    array[minIndex] = temp;
+                }
+            }
+            Sort(input0);           
+            var indexMap = new Dictionary<int, int>();
+            for (int i = 0; i < input0.Length; i++)            
+                if (!indexMap.ContainsKey(input0[i]))
+                    indexMap[input0[i]] = i + 1;
+            string result = "";
+            foreach (var x in input1)            
+                result += $"{indexMap[x]} ";            
+            Custom.WriteColored($"Номери елементів з другого масиву в відсортованому першому:\n{result}\n", White);
         }
         public void Task5(byte inputType)
         {
@@ -306,14 +376,28 @@ namespace Lab4
         protected override T[] InitRand<T>(byte forTask)
         {
             T[] output;
+            var rn = new Random();
+            uint num;
             switch (forTask)
             {
                 case 3:
                     output = new T[2];
-                    var rn = new Random();
                     output[0] = (T)Convert.ChangeType(rn.Next(-2000000000, 2000000000), typeof(T));
                     output[1] = (T)Convert.ChangeType(rn.Next((int)Convert.ChangeType(output[0], typeof(T)), 2000000000), typeof(T));
                     Custom.WriteColored($"{String.Join(" ", output)}\n", White);
+                    return output;
+                case 4:
+                    do
+                    {
+                        Custom.WriteColored("Введіть кількість елементів масиву для генерації масиву з елементами від -1000000000 до 1000000000:\n", White);
+                        num = Custom.ReadLine(uint.Parse, true, "Неправильний тип введення", Red, Yellow, true);
+                        Func<T> random = () => (T)Convert.ChangeType(rn.Next(-1000000000, 1000000000), typeof(T));
+                        output = new T[num];
+                        for (int i = 0; i < num; i++)
+                            output[i] = random();
+                        Custom.WriteColored($"Результат:\n{String.Join(" ", output)}\n", White);
+                    }
+                    while (num == 0);
                     return output;
                 default:
                     return base.InitRand<T>(forTask);
@@ -331,20 +415,23 @@ namespace Lab4
                         {
                             while (true)
                             {
-                                output = (T[])Convert.ChangeType(Array.ConvertAll(Custom.ReadLine(Yellow, true).Split(' '), double.Parse), typeof(T[]));
+                                var temp = Custom.ReadLine(Yellow, true).Split(' ','\t');
+                                Array.ForEach(temp, x => output[Array.IndexOf(temp, x)] = (T)Convert.ChangeType(x, typeof(T)));
                                 if (output[1].CompareTo(output[0]) >= 0) break;
                                 Custom.WriteColored("Друга межа має бути більшою\n", Red);
                             }
                             break;
                         }
-                        catch { Custom.WriteColored("Неправильний тип введення\n", Red); }
+                        catch { Custom.WriteColored($"Неправильний тип введення\n", Red); }
                     return output;
                 default:
                     Custom.WriteColored("Введіть послідовно елементи масиву через пробіл або/та табуляцію:\n", White);
                     while (true)
                         try
                         {
-                            output = (T[])Convert.ChangeType(Array.ConvertAll(Custom.ReadLine(White, true).Split(' ', '\t'), double.Parse), typeof(T[]));
+                            var temp = Custom.ReadLine(Yellow, true).Split(' ', '\t');
+                            output = new T[temp.Length];
+                            Array.ForEach(temp, x => output[Array.IndexOf(temp, x)] = (T)Convert.ChangeType(x, typeof(T)));
                             break;
                         }
                         catch { Custom.WriteColored("Неправильний тип введення\n", Red); }
@@ -364,7 +451,7 @@ namespace Lab4
                     while (true)
                     {
                         output[1] = (T)Convert.ChangeType(Custom.ReadLine(long.Parse, true, "Неправильний тип введення", Red, Yellow, true), typeof(T));
-                        if (output[1].CompareTo(output[0]) >=0) break;
+                        if (output[1].CompareTo(output[0]) >= 0) break;
                         Custom.WriteColored("Друга межа має бути більшою\n", Red);
                     }
                     return output;
@@ -405,7 +492,7 @@ namespace Lab4
             long[] input = Init<long>(inputType, 3);
             var (answer, num) = ("", 0L);
             input[0]--; input[1]++;
-            Custom.WriteColored("Типи відовідей:\n", White, 
+            Custom.WriteColored("Типи відовідей:\n", White,
                                 "+", Yellow, " - загадане число більше.\n", White,
                                 "-", Yellow, " - загадане число менше.\n", White,
                                 "+", Yellow, " - дорівнює загаданому числу.\n", White);
@@ -428,8 +515,38 @@ namespace Lab4
         }
         public void Task4(byte inputType)
         {
-            var input = Init<double>(inputType);
+            int[] input0;
+            int[] input1;
 
+            input0 = Init<int>(inputType, 4);
+            if (inputType == 1)
+            {
+                int[] GetRandomElements(int[] source)
+                {
+                    Random random = new Random();
+                    int count = random.Next(1, source.Length + 1);
+                    return source.OrderBy(x => random.Next()).Take(count).ToArray();
+                }
+                input1 = GetRandomElements(input0);
+                Custom.WriteColored($"Автоматично згенерований другий масив:\n{String.Join(" ", input1)}\n", White);
+            }
+            else
+            {
+                while (true)
+                {
+                    input1 = Init<int>(inputType, 4);
+                    if (input0.Length < input1.Length)
+                    {
+                        Custom.WriteColored("\nКількість елементів другого масиву не може перевищувати кількість елементів першого\n\n", Red, "Введіть повторно другий масив:\n", White);
+                        continue;
+                    }
+                    break;
+                }
+            }
+
+            Array.Sort(input0);
+            Custom.WriteColored("Номери елементів з другого масиву в відсортованому першому:\n", White);
+            Array.ForEach(input1, x => Custom.WriteColored($"{Array.IndexOf(input0, x) + 1} ", White));
         }
         public void Task5(byte inputType)
         {
@@ -636,7 +753,7 @@ namespace Lab4
                                 "2", Yellow, " - Знайти номер K-го елемента по спаданню.\n", White,
                                 "3", Yellow, " - Задача A «Гра “Вгадай число”» зі змагання «53 Дорішування теми \"Бінарний та тернарний пошуки\".\n", White,
                                 "4", Yellow, " - Задача B «Пошук елементів у масиві–1» зі змагання «53 Дорішування теми \"Бінарний та тернарний пошуки\".\n", White,
-                                "6", Yellow, " - Задача C «Пошук елементів у масиві–2» зі змагання «53 Дорішування теми \"Бінарний та тернарний пошуки\".\n", White,
+                                "5", Yellow, " - Задача C «Пошук елементів у масиві–2» зі змагання «53 Дорішування теми \"Бінарний та тернарний пошуки\".\n", White,
                                 "6", Yellow, " - Задача A «Операції над множинами» зі змагання «61 День Іллі Порубльова \"Школи Бобра\".\n", White,
                                 "7", Yellow, " - Задача B «Всюдисущi числа» зі змагання «61 День Іллі Порубльова \"Школи Бобра\".\n", White,
                                 "8", Yellow, " - Задача C «Школярi з хмарочосiв» зі змагання «61 День Іллі Порубльова \"Школи Бобра\".\n", White);
