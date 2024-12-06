@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using static System.ConsoleColor;
@@ -64,12 +63,12 @@ namespace Lab4
     }
     abstract class ArrayInit
     {
-        protected T[] Init<T>(byte inputType, byte forTask = 0) where T : IConvertible, IComparable =>
+        protected T[] Init<T>(IT inputType, byte forTask = 0) where T : IConvertible, IComparable =>
             inputType switch
             {
-                1 => InitRand<T>(forTask),
-                2 => InitInLine<T>(forTask),
-                3 => InitInColon<T>(forTask),
+                IT.Random => InitRand<T>(forTask),
+                IT.InLine => InitInLine<T>(forTask),
+                IT.InCollon => InitInColon<T>(forTask),
                 _ => throw new Exception("Somwting went wrong")
             };
         protected virtual T[] InitRand<T>(byte forTask) where T : IConvertible, IComparable
@@ -151,7 +150,7 @@ namespace Lab4
             switch (forTask)
             {
                 case 3:
-                    output = new T[2];                    
+                    output = new T[2];
                     output[0] = (T)Convert.ChangeType(rn.Next(-2000000000, 2000000000), typeof(T));
                     output[1] = (T)Convert.ChangeType(rn.Next((int)Convert.ChangeType(output[0], typeof(T)), 2000000000), typeof(T));
                     Custom.WriteColored($"{String.Join(" ", output)}\n", White);
@@ -227,11 +226,11 @@ namespace Lab4
             }
         }
 
-        public void Task1(byte inputType)
+        public void Task1(IT inputType)
         {
             var input = Init<double>(inputType);
-            BigDouble result = 1;
-            BigDouble tempResult = 1;
+            BigRational result = 1;
+            BigRational tempResult = 1;
             var lastMax = (value: double.MinValue, index: 0);
             for (int i = 0; i < input.Length; i++)
             {
@@ -247,7 +246,7 @@ namespace Lab4
                                 : $"Добуток чисел перед останнім входженням максимального числа:\n{result}")
                                 + "\n", White);
         }
-        public void Task2(byte inputType)
+        public void Task2(IT inputType)
         {
             var input = Init<double>(inputType);
             double targetValue = double.MaxValue;
@@ -270,7 +269,7 @@ namespace Lab4
                 }
             Custom.WriteColored("Номер K-го елемента по спаданню: ", White, $"{position}\n", Yellow);
         }
-        public void Task3(byte inputType)
+        public void Task3(IT inputType)
         {
             var input = Init<long>(inputType, 3);
             var (answer, num) = ("", 0L);
@@ -278,7 +277,7 @@ namespace Lab4
             Custom.WriteColored("Типи відовідей:\n", White,
                                 "+", Yellow, " - загадане число більше.\n", White,
                                 "-", Yellow, " - загадане число менше.\n", White,
-                                "+", Yellow, " - дорівнює загаданому числу.\n", White);
+                                "=", Yellow, " - дорівнює загаданому числу.\n", White);
             for (int i = 1; answer != "=" && i <= 50; i++)
             {
                 num = (input[1] - input[0]) / 2 + input[0];
@@ -296,21 +295,17 @@ namespace Lab4
             }
             Console.WriteLine($"Відповідь {num}");
         }
-        public void Task4(byte inputType)
+        public void Task4(IT inputType)
         {
             int[] input0;
             int[] input1;
 
             input0 = Init<int>(inputType, 4);
-            if (inputType == 1)
+            if (inputType == IT.Random)
             {
-                int[] GetRandomElements(int[] source)
-                {
-                    Random random = new Random();
-                    int count = random.Next(1, source.Length + 1);
-                    return source.OrderBy(x => random.Next()).Take(count).ToArray();
-                }
-                input1 = GetRandomElements(input0);
+                Random random = new Random();
+                int count = random.Next(1, input0.Length + 1);
+                input1 = input0.OrderBy(x => random.Next()).Take(count).ToArray();
                 Custom.WriteColored($"Автоматично згенерований другий масив:\n{String.Join(" ", input1)}\n", White);
             }
             else
@@ -327,45 +322,62 @@ namespace Lab4
                 }
             }
 
-            void Sort(int[] array)
+            void Sort(int[] array, int[] indices)
             {
+                for (int i = 0; i < array.Length; i++)
+                    indices[i] = i;
+
                 for (int i = 0; i < array.Length - 1; i++)
                 {
                     int minIndex = i;
-                    for (int j = i + 1; j < array.Length; j++)                    
+                    for (int j = i + 1; j < array.Length; j++)
                         if (array[j] < array[minIndex])
-                            minIndex = j;                                   
+                            minIndex = j;
+
                     int temp = array[i];
                     array[i] = array[minIndex];
                     array[minIndex] = temp;
+
+                    int tempIndex = indices[i];
+                    indices[i] = indices[minIndex];
+                    indices[minIndex] = tempIndex;
                 }
             }
-            Sort(input0);           
-            var indexMap = new Dictionary<int, int>();
-            for (int i = 0; i < input0.Length; i++)            
-                if (!indexMap.ContainsKey(input0[i]))
-                    indexMap[input0[i]] = i + 1;
+
+            int[] indices = new int[input0.Length];
+            Sort(input0, indices);
+
             string result = "";
-            foreach (var x in input1)            
-                result += $"{indexMap[x]} ";            
+            foreach (var x in input1)
+            {
+                for (int i = 0; i < input0.Length; i++)
+                {
+                    if (input0[i] == x)
+                    {
+                        result += $"{indices[i] + 1} ";
+                        break;
+                    }
+                }
+            }
             Custom.WriteColored($"Номери елементів з другого масиву в відсортованому першому:\n{result}\n", White);
+
         }
-        public void Task5(byte inputType)
+        public void Task5(IT inputType)
         {
             var input = Init<double>(inputType);
 
         }
-        public void Task6(byte inputType)
+        public void Task6(IT inputType)
         {
             var input = Init<double>(inputType);
 
         }
-        public void Task7(byte inputType)
+        public void Task7(IT inputType)
         {
             var input = Init<double>(inputType);
 
         }
-        public void Task8(byte inputType)
+        public void Task8(IT inputType)
         {
             var input = Init<double>(inputType);
 
@@ -415,7 +427,7 @@ namespace Lab4
                         {
                             while (true)
                             {
-                                var temp = Custom.ReadLine(Yellow, true).Split(' ','\t');
+                                var temp = Custom.ReadLine(Yellow, true).Split(' ', '\t');
                                 Array.ForEach(temp, x => output[Array.IndexOf(temp, x)] = (T)Convert.ChangeType(x, typeof(T)));
                                 if (output[1].CompareTo(output[0]) >= 0) break;
                                 Custom.WriteColored("Друга межа має бути більшою\n", Red);
@@ -460,7 +472,7 @@ namespace Lab4
             }
         }
 
-        public void Task1(byte inputType)
+        public void Task1(IT inputType)
         {
             var input = Init<double>(inputType);
             double maxValue = input.Max();
@@ -472,11 +484,11 @@ namespace Lab4
             }
             double[] trimmedArray = new double[maxIndex];
             Array.Copy(input, trimmedArray, maxIndex);
-            BigDouble result = 1;
+            BigRational result = 1;
             Array.ForEach(trimmedArray, x => result *= x);
             Custom.WriteColored($"Добуток чисел перед останнім входженням максимального числа:\n{result}\n", White);
         }
-        public void Task2(byte inputType)
+        public void Task2(IT inputType)
         {
             double[] input = Init<double>(inputType);
             Custom.WriteColored("Введіть число K\n", White);
@@ -487,7 +499,7 @@ namespace Lab4
             int position = Array.IndexOf(input, sortedArray[k - 1]) + 1;
             Custom.WriteColored("Номер K-го елемента по спаданню: ", White, $"{position}\n", Yellow);
         }
-        public void Task3(byte inputType)
+        public void Task3(IT inputType)
         {
             long[] input = Init<long>(inputType, 3);
             var (answer, num) = ("", 0L);
@@ -513,21 +525,17 @@ namespace Lab4
             }
             Console.WriteLine($"Відповідь {num}");
         }
-        public void Task4(byte inputType)
+        public void Task4(IT inputType)
         {
             int[] input0;
             int[] input1;
 
             input0 = Init<int>(inputType, 4);
-            if (inputType == 1)
+            if (inputType == IT.Random)
             {
-                int[] GetRandomElements(int[] source)
-                {
-                    Random random = new Random();
-                    int count = random.Next(1, source.Length + 1);
-                    return source.OrderBy(x => random.Next()).Take(count).ToArray();
-                }
-                input1 = GetRandomElements(input0);
+                Random random = new Random();
+                int count = random.Next(1, input0.Length + 1);
+                input1 = input0.OrderBy(x => random.Next()).Take(count).ToArray();
                 Custom.WriteColored($"Автоматично згенерований другий масив:\n{String.Join(" ", input1)}\n", White);
             }
             else
@@ -548,22 +556,22 @@ namespace Lab4
             Custom.WriteColored("Номери елементів з другого масиву в відсортованому першому:\n", White);
             Array.ForEach(input1, x => Custom.WriteColored($"{Array.IndexOf(input0, x) + 1} ", White));
         }
-        public void Task5(byte inputType)
+        public void Task5(IT inputType)
         {
             var input = Init<double>(inputType);
 
         }
-        public void Task6(byte inputType)
+        public void Task6(IT inputType)
         {
             var input = Init<double>(inputType);
 
         }
-        public void Task7(byte inputType)
+        public void Task7(IT inputType)
         {
             var input = Init<double>(inputType);
 
         }
-        public void Task8(byte inputType)
+        public void Task8(IT inputType)
         {
             var input = Init<double>(inputType);
 
@@ -571,12 +579,12 @@ namespace Lab4
     }
     public static class Other
     {
-        public struct BigDouble
+        public struct BigRational
         {
             private BigInteger Mantissa { get; set; }
             private BigInteger Exponent { get; set; }
-            public BigDouble(BigInteger mantissa, BigInteger exponent) => (Mantissa, Exponent) = (mantissa, exponent);
-            private static BigDouble FromDouble(double value)
+            public BigRational(BigInteger mantissa, BigInteger exponent) => (Mantissa, Exponent) = (mantissa, exponent);
+            private static BigRational FromDouble(double value)
             {
                 if (value == 0) return 0;
                 bool isNegative = value < 0;
@@ -590,7 +598,7 @@ namespace Lab4
                 int decimalPlaces = parts[1].Length;
                 result.exponent += -decimalPlaces;
                 if (isNegative) result.mantissa = -result.mantissa;
-                return new BigDouble((BigInteger)result.mantissa, result.exponent);
+                return new BigRational((BigInteger)result.mantissa, result.exponent);
             }
 
             public override string ToString()
@@ -615,59 +623,59 @@ namespace Lab4
             }
             public override bool Equals(object obj)
             {
-                if (obj is BigDouble other)
+                if (obj is BigRational other)
                     return this == other;
                 return false;
             }
             public override int GetHashCode() => HashCode.Combine(Mantissa, Exponent);
 
-            public static implicit operator BigDouble(double value) => FromDouble(value);
+            public static implicit operator BigRational(double value) => FromDouble(value);
 
-            public static BigDouble operator +(BigDouble a, BigDouble b)
+            public static BigRational operator +(BigRational a, BigRational b)
             {
                 if (a.Exponent == b.Exponent)
-                    return new BigDouble(a.Mantissa + b.Mantissa, a.Exponent);
+                    return new BigRational(a.Mantissa + b.Mantissa, a.Exponent);
                 else if (a.Exponent > b.Exponent)
                 {
                     BigInteger shift = BigInteger.Pow(10, (int)(a.Exponent - b.Exponent));
-                    return new BigDouble(a.Mantissa + b.Mantissa * shift, a.Exponent);
+                    return new BigRational(a.Mantissa + b.Mantissa * shift, a.Exponent);
                 }
                 else
                 {
                     BigInteger shift = BigInteger.Pow(10, (int)(b.Exponent - a.Exponent));
-                    return new BigDouble(a.Mantissa * shift + b.Mantissa, b.Exponent);
+                    return new BigRational(a.Mantissa * shift + b.Mantissa, b.Exponent);
                 }
             }
-            public static BigDouble operator +(BigDouble a, double b) => a + FromDouble(b);
-            public static BigDouble operator +(double a, BigDouble b) => FromDouble(a) + b;
+            public static BigRational operator +(BigRational a, double b) => a + FromDouble(b);
+            public static BigRational operator +(double a, BigRational b) => FromDouble(a) + b;
 
-            public static BigDouble operator -(BigDouble a, BigDouble b)
+            public static BigRational operator -(BigRational a, BigRational b)
             {
                 if (a.Exponent == b.Exponent)
-                    return new BigDouble(a.Mantissa - b.Mantissa, a.Exponent);
+                    return new BigRational(a.Mantissa - b.Mantissa, a.Exponent);
                 else if (a.Exponent > b.Exponent)
                 {
                     BigInteger shift = BigInteger.Pow(10, (int)(a.Exponent - b.Exponent));
-                    return new BigDouble(a.Mantissa - b.Mantissa * shift, a.Exponent);
+                    return new BigRational(a.Mantissa - b.Mantissa * shift, a.Exponent);
                 }
                 else
                 {
                     BigInteger shift = BigInteger.Pow(10, (int)(b.Exponent - a.Exponent));
-                    return new BigDouble(a.Mantissa * shift - b.Mantissa, b.Exponent);
+                    return new BigRational(a.Mantissa * shift - b.Mantissa, b.Exponent);
                 }
             }
-            public static BigDouble operator -(BigDouble a, double b) => a - FromDouble(b);
-            public static BigDouble operator -(double a, BigDouble b) => FromDouble(a) - b;
+            public static BigRational operator -(BigRational a, double b) => a - FromDouble(b);
+            public static BigRational operator -(double a, BigRational b) => FromDouble(a) - b;
 
-            public static BigDouble operator /(BigDouble a, BigDouble b) => new BigDouble(a.Mantissa / b.Mantissa, a.Exponent - b.Exponent);
-            public static BigDouble operator /(BigDouble a, double b) => a / FromDouble(b);
-            public static BigDouble operator /(double a, BigDouble b) => FromDouble(a) / b;
+            public static BigRational operator /(BigRational a, BigRational b) => new BigRational(a.Mantissa / b.Mantissa, a.Exponent - b.Exponent);
+            public static BigRational operator /(BigRational a, double b) => a / FromDouble(b);
+            public static BigRational operator /(double a, BigRational b) => FromDouble(a) / b;
 
-            public static BigDouble operator *(BigDouble a, BigDouble b) => new BigDouble(a.Mantissa * b.Mantissa, a.Exponent + b.Exponent);
-            public static BigDouble operator *(BigDouble a, double b) => a * FromDouble(b);
-            public static BigDouble operator *(double a, BigDouble b) => FromDouble(a) * b;
+            public static BigRational operator *(BigRational a, BigRational b) => new BigRational(a.Mantissa * b.Mantissa, a.Exponent + b.Exponent);
+            public static BigRational operator *(BigRational a, double b) => a * FromDouble(b);
+            public static BigRational operator *(double a, BigRational b) => FromDouble(a) * b;
 
-            public static bool operator ==(BigDouble a, BigDouble b)
+            public static bool operator ==(BigRational a, BigRational b)
             {
                 if (a.Exponent == b.Exponent)
                     return a.Mantissa == b.Mantissa;
@@ -679,14 +687,14 @@ namespace Lab4
                 else
                     return a.Mantissa * shift == b.Mantissa;
             }
-            public static bool operator ==(BigDouble a, double b) => a == FromDouble(b);
-            public static bool operator ==(double a, BigDouble b) => FromDouble(a) == b;
+            public static bool operator ==(BigRational a, double b) => a == FromDouble(b);
+            public static bool operator ==(double a, BigRational b) => FromDouble(a) == b;
 
-            public static bool operator !=(BigDouble a, BigDouble b) => !(a == b);
-            public static bool operator !=(BigDouble a, double b) => !(a == b);
-            public static bool operator !=(double a, BigDouble b) => !(a == b);
+            public static bool operator !=(BigRational a, BigRational b) => !(a == b);
+            public static bool operator !=(BigRational a, double b) => !(a == b);
+            public static bool operator !=(double a, BigRational b) => !(a == b);
 
-            public static bool operator >(BigDouble a, BigDouble b)
+            public static bool operator >(BigRational a, BigRational b)
             {
                 if (a.Exponent == b.Exponent)
                     return a.Mantissa > b.Mantissa;
@@ -702,51 +710,73 @@ namespace Lab4
                     return a.Mantissa * shift > b.Mantissa;
                 }
             }
-            public static bool operator >(BigDouble a, double b) => a > FromDouble(b);
-            public static bool operator >(double a, BigDouble b) => FromDouble(a) > b;
+            public static bool operator >(BigRational a, double b) => a > FromDouble(b);
+            public static bool operator >(double a, BigRational b) => FromDouble(a) > b;
 
-            public static bool operator <(BigDouble a, BigDouble b) => !(a >= b);
-            public static bool operator <(BigDouble a, double b) => !(a >= b);
-            public static bool operator <(double a, BigDouble b) => !(a >= b);
+            public static bool operator <(BigRational a, BigRational b) => !(a >= b);
+            public static bool operator <(BigRational a, double b) => !(a >= b);
+            public static bool operator <(double a, BigRational b) => !(a >= b);
 
-            public static bool operator >=(BigDouble a, BigDouble b) => a == b || a > b;
-            public static bool operator >=(BigDouble a, double b) => a == b || a > b;
-            public static bool operator >=(double a, BigDouble b) => a == b || a > b;
+            public static bool operator >=(BigRational a, BigRational b) => a == b || a > b;
+            public static bool operator >=(BigRational a, double b) => a == b || a > b;
+            public static bool operator >=(double a, BigRational b) => a == b || a > b;
 
-            public static bool operator <=(BigDouble a, BigDouble b) => a == b || a < b;
-            public static bool operator <=(BigDouble a, double b) => a == b || a < b;
-            public static bool operator <=(double a, BigDouble b) => a == b || a < b;
-        }
-        public delegate void Task(byte inputType);
+            public static bool operator <=(BigRational a, BigRational b) => a == b || a < b;
+            public static bool operator <=(BigRational a, double b) => a == b || a < b;
+            public static bool operator <=(double a, BigRational b) => a == b || a < b;
+        }        
         public interface ITaskContaiter
         {
-            public void Task1(byte inputType);
-            public void Task2(byte inputType);
-            public void Task3(byte inputType);
-            public void Task4(byte inputType);
-            public void Task5(byte inputType);
-            public void Task6(byte inputType);
-            public void Task7(byte inputType);
-            public void Task8(byte inputType);
+            public void Task1(IT inputType);
+            public void Task2(IT inputType);
+            public void Task3(IT inputType);
+            public void Task4(IT inputType);
+            public void Task5(IT inputType);
+            public void Task6(IT inputType);
+            public void Task7(IT inputType);
+            public void Task8(IT inputType);
         }
-        static public byte SelectArrayMethodsUsage()
+        public enum AMU 
+        {
+            Exit,
+            Nah,
+            Yup,
+        }
+        public enum Task
+        {
+            Task1 = 1,
+            Task2 = 2,
+            Task3 = 3,
+            Task4 = 4,
+            Task5 = 5,
+            Task6 = 6,
+            Task7 = 7,
+            Task8 = 8,
+        }
+        public enum IT 
+        {
+            Random = 1,
+            InLine = 2,
+            InCollon = 3,
+        }
+        public static TEnum FixedEnumParse<TEnum>(string value) where TEnum : struct
+        {
+            TEnum x = Enum.Parse<TEnum>(value);
+            if (!Enum.IsDefined(typeof(TEnum), x))
+                throw new ArgumentException("Undefined enum value");
+            return x;
+        }
+        static public AMU SelectArrayMethodsUsage()
         {
             Custom.WriteColored("Виберіть тип виконання програми:\n", White,
                                 "0", Yellow, " - Закрити програму.\n", White,
                                 "1", Yellow, " - Без методів классу Array стандартої бібліотеки.\n", White,
-                                "2", Yellow, " - З методами классу Array стандартої бібліотеки.\n", White);
-        start:
-            var x = Custom.ReadLine(Convert.ToByte, true, "Неправильний тип введення", Red, Yellow, true);
-            if (x == 0) Environment.Exit(0);
-            if (x == 1 || x == 2)
-                return x;
-            else
-            {
-                Custom.WriteColored("Неправильний тип введення\n", Red);
-                goto start;
-            }
+                                "2", Yellow, " - З методами классу Array стандартої бібліотеки.\n", White);             
+            AMU x = Custom.ReadLine(FixedEnumParse<AMU>, true, "Неправильний тип введення", Red, Yellow, true);
+            if (x == AMU.Exit) Environment.Exit(0);
+            return x;                      
         }
-        static public byte SelectTask()
+        static public Task SelectTask()
         {
             Custom.WriteColored("Виберіть задачу:\n", White,
                                 "1", Yellow, " - Знайти добуток елементів масиву, які розміщені перед останнім входженням максимального числа.\n", White,
@@ -756,56 +786,42 @@ namespace Lab4
                                 "5", Yellow, " - Задача C «Пошук елементів у масиві–2» зі змагання «53 Дорішування теми \"Бінарний та тернарний пошуки\".\n", White,
                                 "6", Yellow, " - Задача A «Операції над множинами» зі змагання «61 День Іллі Порубльова \"Школи Бобра\".\n", White,
                                 "7", Yellow, " - Задача B «Всюдисущi числа» зі змагання «61 День Іллі Порубльова \"Школи Бобра\".\n", White,
-                                "8", Yellow, " - Задача C «Школярi з хмарочосiв» зі змагання «61 День Іллі Порубльова \"Школи Бобра\".\n", White);
-        start:
-            var x = Custom.ReadLine(Convert.ToByte, true, "Неправильний тип введення", Red, Yellow, true);
-            if (x >= 1 && x <= 8)
-                return x;
-            else
-            {
-                Custom.WriteColored("Неправильний тип введення\n", Red);
-                goto start;
-            }
+                                "8", Yellow, " - Задача C «Школярi з хмарочосiв» зі змагання «61 День Іллі Порубльова \"Школи Бобра\".\n", White);        
+            var x = Custom.ReadLine(FixedEnumParse<Task>, true, "Неправильний тип введення", Red, Yellow, true);            
+            return x;
         }
-        static public byte SelectInputType()
+        static public IT SelectInputType()
         {
             Custom.WriteColored("Виберіть тип введення:\n", White,
                                 "1", Yellow, " - Заповнити масив випадковими числами.\n", White,
                                 "2", Yellow, " - Заповнити масив числами в рядок через пробіл.\n", White,
-                                "3", Yellow, " - Заповнити масив в стовпчик через ", White, "Enter\n", Yellow);
-        start:
-            var x = Custom.ReadLine(Convert.ToByte, true, "Неправильний тип введення", Red, Yellow, true);
-            if (x >= 1 && x <= 3)
-                return x;
-            else
-            {
-                Custom.WriteColored("Неправильний тип введення\n", Red);
-                goto start;
-            }
+                                "3", Yellow, " - Заповнити масив в стовпчик через ", White, "Enter\n", Yellow);        
+            var x = Custom.ReadLine(FixedEnumParse<IT>, true, "Неправильний тип введення", Red, Yellow, true);            
+            return x;
         }
-        static public void StartTask(byte arrayMethodsUsage, byte taskNum, byte inputType)
+        static public void StartTask(AMU arrayMethodsUsage, Task taskNum, IT inputType)
         {
-            ITaskContaiter TaskContainer = (arrayMethodsUsage == 1) ? new AMLR() : new AMFR();
+            ITaskContaiter TaskContainer = (arrayMethodsUsage == AMU.Nah) ? new AMLR() : new AMFR();
             Custom.WriteColored(
                 "\nЗапускаю задачу ", White, $"{taskNum} ", Yellow,
                 ((arrayMethodsUsage == 0) ? "без використання " : "з використанням ") + "методів класу System.", White, "Array ", DarkGreen,
                 "та використанням " + inputType switch
                 {
-                    1 => "випадкового заповнення.\n",
-                    2 => "заповнення в рядок.\n",
-                    3 => "заповнення в стовпчик.\n",
+                    IT.Random => "випадкового заповнення.\n",
+                    IT.InLine => "заповнення в рядок.\n",
+                    IT.InCollon => "заповнення в стовпчик.\n",
                     _ => throw new NotImplementedException("Something went wrong")
                 }, White);
-            Task task = taskNum switch
+            Action<IT> task = taskNum switch
             {
-                1 => TaskContainer.Task1,
-                2 => TaskContainer.Task2,
-                3 => TaskContainer.Task3,
-                4 => TaskContainer.Task4,
-                5 => TaskContainer.Task5,
-                6 => TaskContainer.Task6,
-                7 => TaskContainer.Task7,
-                8 => TaskContainer.Task8,
+                Task.Task1 => TaskContainer.Task1,
+                Task.Task2 => TaskContainer.Task2,
+                Task.Task3 => TaskContainer.Task3,
+                Task.Task4 => TaskContainer.Task4,
+                Task.Task5 => TaskContainer.Task5,
+                Task.Task6 => TaskContainer.Task6,
+                Task.Task7 => TaskContainer.Task7,
+                Task.Task8 => TaskContainer.Task8,
                 _ => throw new NotImplementedException("Something went wrong")
             };
             task(inputType);
