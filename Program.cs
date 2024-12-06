@@ -63,7 +63,7 @@ namespace Lab4
     }
     abstract class ArrayInit
     {
-        protected T[] Init<T>(IT inputType, byte forTask = 0) where T : IConvertible, IComparable =>
+        protected T[] Init<T>(IT inputType, Task forTask = 0) where T : IConvertible, IComparable =>
             inputType switch
             {
                 IT.Random => InitRand<T>(forTask),
@@ -71,7 +71,7 @@ namespace Lab4
                 IT.InCollon => InitInColon<T>(forTask),
                 _ => throw new Exception("Somwting went wrong")
             };
-        protected virtual T[] InitRand<T>(byte forTask) where T : IConvertible, IComparable
+        protected virtual T[] InitRand<T>(Task forTask) where T : IConvertible, IComparable
         {
             T[] output = [];
             uint num;
@@ -93,7 +93,7 @@ namespace Lab4
             while (num == 0);
             return output;
         }
-        protected virtual T[] InitInLine<T>(byte forTask) where T : IConvertible, IComparable
+        protected virtual T[] InitInLine<T>(Task forTask) where T : IConvertible, IComparable
         {
             T[] output;
             Custom.WriteColored("Введіть послідовно елементи масиву через пробіл або/та табуляцію:\n", White);
@@ -109,7 +109,7 @@ namespace Lab4
                 catch { Custom.WriteColored("Неправильний тип введення\n", Red); }
             return output;
         }
-        protected virtual T[] InitInColon<T>(byte forTask) where T : IConvertible, IComparable
+        protected virtual T[] InitInColon<T>(Task forTask) where T : IConvertible, IComparable
         {
             T[] output = [];
             uint num;
@@ -142,20 +142,20 @@ namespace Lab4
     }
     class ArrayMethodLessRealization : ArrayInit, ITaskContaiter
     {
-        protected override T[] InitRand<T>(byte forTask)
+        protected override T[] InitRand<T>(Task forTask)
         {
             T[] output;
             var rn = new Random();
             uint num;
             switch (forTask)
             {
-                case 3:
+                case Task.Task3:
                     output = new T[2];
                     output[0] = (T)Convert.ChangeType(rn.Next(-2000000000, 2000000000), typeof(T));
                     output[1] = (T)Convert.ChangeType(rn.Next((int)Convert.ChangeType(output[0], typeof(T)), 2000000000), typeof(T));
                     Custom.WriteColored($"{String.Join(" ", output)}\n", White);
                     return output;
-                case 4:
+                case Task.Task4:
                     do
                     {
                         Custom.WriteColored("Введіть кількість елементів масиву для генерації масиву з елементами від -1000000000 до 1000000000:\n", White);
@@ -172,12 +172,12 @@ namespace Lab4
                     return base.InitRand<T>(forTask);
             }
         }
-        protected override T[] InitInLine<T>(byte forTask)
+        protected override T[] InitInLine<T>(Task forTask)
         {
             T[] output;
             switch (forTask)
             {
-                case 3:
+                case Task.Task3:
                     output = new T[2];
                     while (true)
                         try
@@ -204,12 +204,12 @@ namespace Lab4
                     return base.InitInLine<T>(forTask);
             }
         }
-        protected override T[] InitInColon<T>(byte forTask)
+        protected override T[] InitInColon<T>(Task forTask)
         {
             T[] output;
             switch (forTask)
             {
-                case 3:
+                case Task.Task3:
                     output = new T[2];
                     Custom.WriteColored("Введіть першу межу:\n", White);
                     output[0] = (T)Convert.ChangeType(Custom.ReadLine(long.Parse, true, "Неправильний тип введення", Red, Yellow, true), typeof(T));
@@ -271,7 +271,7 @@ namespace Lab4
         }
         public void Task3(IT inputType)
         {
-            var input = Init<long>(inputType, 3);
+            var input = Init<long>(inputType, Task.Task3);
             var (answer, num) = ("", 0L);
             input[0]--; input[1]++;
             Custom.WriteColored("Типи відовідей:\n", White,
@@ -300,7 +300,7 @@ namespace Lab4
             int[] input0;
             int[] input1;
 
-            input0 = Init<int>(inputType, 4);
+            input0 = Init<int>(inputType, Task.Task4);
             if (inputType == IT.Random)
             {
                 Random random = new Random();
@@ -312,7 +312,7 @@ namespace Lab4
             {
                 while (true)
                 {
-                    input1 = Init<int>(inputType, 4);
+                    input1 = Init<int>(inputType, Task.Task4);
                     if (input0.Length < input1.Length)
                     {
                         Custom.WriteColored("\nКількість елементів другого масиву не може перевищувати кількість елементів першого\n\n", Red, "Введіть повторно другий масив:\n", White);
@@ -385,20 +385,20 @@ namespace Lab4
     }
     class ArrayMethodFulRealization : ArrayInit, ITaskContaiter
     {
-        protected override T[] InitRand<T>(byte forTask)
+        protected override T[] InitRand<T>(Task forTask)
         {
             T[] output;
             var rn = new Random();
             uint num;
             switch (forTask)
             {
-                case 3:
+                case Task.Task3:
                     output = new T[2];
                     output[0] = (T)Convert.ChangeType(rn.Next(-2000000000, 2000000000), typeof(T));
                     output[1] = (T)Convert.ChangeType(rn.Next((int)Convert.ChangeType(output[0], typeof(T)), 2000000000), typeof(T));
                     Custom.WriteColored($"{String.Join(" ", output)}\n", White);
                     return output;
-                case 4:
+                case Task.Task4:
                     do
                     {
                         Custom.WriteColored("Введіть кількість елементів масиву для генерації масиву з елементами від -1000000000 до 1000000000:\n", White);
@@ -415,12 +415,12 @@ namespace Lab4
                     return base.InitRand<T>(forTask);
             }
         }
-        protected override T[] InitInLine<T>(byte forTask)
+        protected override T[] InitInLine<T>(Task forTask)
         {
             T[] output;
             switch (forTask)
             {
-                case 3:
+                case Task.Task3:
                     output = new T[2];
                     while (true)
                         try
@@ -450,12 +450,12 @@ namespace Lab4
                     return output;
             }
         }
-        protected override T[] InitInColon<T>(byte forTask)
+        protected override T[] InitInColon<T>(Task forTask)
         {
             T[] output;
             switch (forTask)
             {
-                case 3:
+                case Task.Task3:
                     output = new T[2];
                     Custom.WriteColored("Введіть першу межу:\n", White);
                     output[0] = (T)Convert.ChangeType(Custom.ReadLine(long.Parse, true, "Неправильний тип введення", Red, Yellow, true), typeof(T));
@@ -501,7 +501,7 @@ namespace Lab4
         }
         public void Task3(IT inputType)
         {
-            long[] input = Init<long>(inputType, 3);
+            long[] input = Init<long>(inputType, Task.Task3);
             var (answer, num) = ("", 0L);
             input[0]--; input[1]++;
             Custom.WriteColored("Типи відовідей:\n", White,
@@ -530,7 +530,7 @@ namespace Lab4
             int[] input0;
             int[] input1;
 
-            input0 = Init<int>(inputType, 4);
+            input0 = Init<int>(inputType, Task.Task4);
             if (inputType == IT.Random)
             {
                 Random random = new Random();
@@ -542,7 +542,7 @@ namespace Lab4
             {
                 while (true)
                 {
-                    input1 = Init<int>(inputType, 4);
+                    input1 = Init<int>(inputType, Task.Task4);
                     if (input0.Length < input1.Length)
                     {
                         Custom.WriteColored("\nКількість елементів другого масиву не може перевищувати кількість елементів першого\n\n", Red, "Введіть повторно другий масив:\n", White);
@@ -724,7 +724,7 @@ namespace Lab4
             public static bool operator <=(BigRational a, BigRational b) => a == b || a < b;
             public static bool operator <=(BigRational a, double b) => a == b || a < b;
             public static bool operator <=(double a, BigRational b) => a == b || a < b;
-        }        
+        }
         public interface ITaskContaiter
         {
             public void Task1(IT inputType);
@@ -736,7 +736,7 @@ namespace Lab4
             public void Task7(IT inputType);
             public void Task8(IT inputType);
         }
-        public enum AMU 
+        public enum AMU
         {
             Exit,
             Nah,
@@ -745,21 +745,21 @@ namespace Lab4
         public enum Task
         {
             Task1 = 1,
-            Task2 = 2,
-            Task3 = 3,
-            Task4 = 4,
-            Task5 = 5,
-            Task6 = 6,
-            Task7 = 7,
-            Task8 = 8,
+            Task2,
+            Task3,
+            Task4,
+            Task5,
+            Task6,
+            Task7,
+            Task8,
         }
-        public enum IT 
+        public enum IT
         {
             Random = 1,
-            InLine = 2,
-            InCollon = 3,
+            InLine,
+            InCollon,
         }
-        public static TEnum FixedEnumParse<TEnum>(string value) where TEnum : struct
+        private static TEnum FixedEnumParse<TEnum>(string value) where TEnum : struct
         {
             TEnum x = Enum.Parse<TEnum>(value);
             if (!Enum.IsDefined(typeof(TEnum), x))
@@ -771,10 +771,10 @@ namespace Lab4
             Custom.WriteColored("Виберіть тип виконання програми:\n", White,
                                 "0", Yellow, " - Закрити програму.\n", White,
                                 "1", Yellow, " - Без методів классу Array стандартої бібліотеки.\n", White,
-                                "2", Yellow, " - З методами классу Array стандартої бібліотеки.\n", White);             
+                                "2", Yellow, " - З методами классу Array стандартої бібліотеки.\n", White);
             AMU x = Custom.ReadLine(FixedEnumParse<AMU>, true, "Неправильний тип введення", Red, Yellow, true);
             if (x == AMU.Exit) Environment.Exit(0);
-            return x;                      
+            return x;
         }
         static public Task SelectTask()
         {
@@ -786,8 +786,8 @@ namespace Lab4
                                 "5", Yellow, " - Задача C «Пошук елементів у масиві–2» зі змагання «53 Дорішування теми \"Бінарний та тернарний пошуки\".\n", White,
                                 "6", Yellow, " - Задача A «Операції над множинами» зі змагання «61 День Іллі Порубльова \"Школи Бобра\".\n", White,
                                 "7", Yellow, " - Задача B «Всюдисущi числа» зі змагання «61 День Іллі Порубльова \"Школи Бобра\".\n", White,
-                                "8", Yellow, " - Задача C «Школярi з хмарочосiв» зі змагання «61 День Іллі Порубльова \"Школи Бобра\".\n", White);        
-            var x = Custom.ReadLine(FixedEnumParse<Task>, true, "Неправильний тип введення", Red, Yellow, true);            
+                                "8", Yellow, " - Задача C «Школярi з хмарочосiв» зі змагання «61 День Іллі Порубльова \"Школи Бобра\".\n", White);
+            var x = Custom.ReadLine(FixedEnumParse<Task>, true, "Неправильний тип введення", Red, Yellow, true);
             return x;
         }
         static public IT SelectInputType()
@@ -795,8 +795,8 @@ namespace Lab4
             Custom.WriteColored("Виберіть тип введення:\n", White,
                                 "1", Yellow, " - Заповнити масив випадковими числами.\n", White,
                                 "2", Yellow, " - Заповнити масив числами в рядок через пробіл.\n", White,
-                                "3", Yellow, " - Заповнити масив в стовпчик через ", White, "Enter\n", Yellow);        
-            var x = Custom.ReadLine(FixedEnumParse<IT>, true, "Неправильний тип введення", Red, Yellow, true);            
+                                "3", Yellow, " - Заповнити масив в стовпчик через ", White, "Enter\n", Yellow);
+            var x = Custom.ReadLine(FixedEnumParse<IT>, true, "Неправильний тип введення", Red, Yellow, true);
             return x;
         }
         static public void StartTask(AMU arrayMethodsUsage, Task taskNum, IT inputType)
