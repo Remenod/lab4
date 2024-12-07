@@ -63,7 +63,7 @@ namespace Lab4
     }
     abstract class ArrayInit
     {
-        protected T[] Init<T>(IT inputType, Task forTask = 0) where T : IConvertible, IComparable =>
+        protected T[] InitArray<T>(IT inputType, Task forTask = 0) where T : IConvertible, IComparable =>
             inputType switch
             {
                 IT.Random => InitRand<T>(forTask),
@@ -94,6 +94,18 @@ namespace Lab4
                         for (int i = 0; i < num; i++)
                             output[i] = random();
                         Custom.WriteColored($"Результат:\n{String.Join(" ", output)}\n", White);
+                    }
+                    while (num == 0);
+                    return output;
+                case Task._6:
+                    do
+                    {
+                        Custom.WriteColored("Введіть кількість елементів масиву для генерації масиву з елементами від -100 до 100:\n", White);
+                        num = Custom.ReadLine(uint.Parse, true, "Неправильний тип введення", Red, Yellow, true);
+                        Func<T> random = () => (T)Convert.ChangeType(rn.Next(-100, 100), typeof(T));
+                        output = new T[num];
+                        for (int i = 0; i < num; i++)
+                            output[i] = random();
                     }
                     while (num == 0);
                     return output;
@@ -187,11 +199,30 @@ namespace Lab4
     {
         protected override T[] InitRand<T>(Task forTask)
         {
-            //T[] output;
+            T[] output;
             //var rn = new Random();
             //uint num;
             switch (forTask)
             {
+                case Task._6:
+                    output = base.InitRand<T>(Task._6);
+                    Sort(output);
+                    Custom.WriteColored($"Результат:\n{String.Join(" ", output)}\n", White);
+                    return output;
+                    void Sort(T[] array)
+                    {
+                        for (int i = 0; i < array.Length - 1; i++)
+                        {
+                            int minIndex = i;
+                            for (int j = i + 1; j < array.Length; j++)
+                                if (array[j].CompareTo(array[minIndex]) < 0)
+                                    minIndex = j;
+                            T temp = array[i];
+                            array[i] = array[minIndex];
+                            array[minIndex] = temp;
+                        }
+                    }
+
                 default:
                     return base.InitRand<T>(forTask);
             }
@@ -240,7 +271,7 @@ namespace Lab4
 
         public void Task1(IT inputType)
         {
-            var input = Init<double>(inputType);
+            var input = InitArray<double>(inputType);
             BigRational result = 1;
             BigRational tempResult = 1;
             var lastMax = (value: double.MinValue, index: 0);
@@ -260,7 +291,7 @@ namespace Lab4
         }
         public void Task2(IT inputType)
         {
-            var input = Init<double>(inputType);
+            var input = InitArray<double>(inputType);
             double targetValue = double.MaxValue;
             Custom.WriteColored("Введіть число K\n", White);
             int k = Custom.ReadLine(int.Parse, true, "Неправильний тип введення", Red, Yellow, true);
@@ -283,7 +314,7 @@ namespace Lab4
         }
         public void Task3(IT inputType)
         {
-            var input = Init<int>(inputType, Task._3);
+            var input = InitArray<int>(inputType, Task._3);
             var (answer, num) = ("", 0);
             input[0]--; input[1]++;
             Custom.WriteColored("Типи відовідей:\n", White,
@@ -312,7 +343,7 @@ namespace Lab4
             int[] input0;
             int[] input1;
 
-            input0 = Init<int>(inputType, Task._4);
+            input0 = InitArray<int>(inputType, Task._4);
             if (inputType == IT.Random)
             {
                 Random random = new Random();
@@ -324,7 +355,7 @@ namespace Lab4
             {
                 while (true)
                 {
-                    input1 = Init<int>(inputType, Task._4);
+                    input1 = InitArray<int>(inputType, Task._4);
                     if (input0.Length < input1.Length)
                     {
                         Custom.WriteColored("\nКількість елементів другого масиву не може перевищувати кількість елементів першого\n\n", Red, "Введіть повторно другий масив:\n", White);
@@ -376,17 +407,17 @@ namespace Lab4
         }
         public void Task5(IT inputType)
         {
-            var input0 = Init<int>(inputType);
-            var input1 = Init<int>(SelectInputType());
+            var input0 = InitArray<int>(inputType);
+            var input1 = InitArray<int>(SelectInputType());
             Sort(input0);
             foreach (var value in input1)
             {
-                var firstIndex = FindFirstIndex(input0, value)+1;
+                var firstIndex = FindFirstIndex(input0, value) + 1;
                 if (firstIndex == -1)
                     Custom.WriteColored("0\n", White);
                 else
                 {
-                    var lastIndex = FindLastIndex(input0, value)+1;
+                    var lastIndex = FindLastIndex(input0, value) + 1;
                     Custom.WriteColored($"{firstIndex} {lastIndex}\n", White);
                 }
             }
@@ -442,17 +473,88 @@ namespace Lab4
         }
         public void Task6(IT inputType)
         {
-            var input = Init<double>(inputType);
-
+            Custom.WriteColored("Виберіть дію:\n", White,
+                     "1", Yellow, " - Об'єднання.\n", White,
+                     "2", Yellow, " - Перетин.\n", White,
+                     "3", Yellow, " - Різниця.\n", White);
+            var mode = Custom.ReadLine(FixedEnumParse<Task6Modes>, true, "Неправильний тип введення", Red, Yellow, true);
+            var input0 = InitArray<int>(inputType, Task._6);
+            var input1 = InitArray<int>(inputType, Task._6);
+            int[] temp, output = [];
+            int i = 0, j = 0, k = 0;
+            switch (mode)
+            {
+                case Task6Modes.UNION:
+                    temp = new int[input0.Length + input1.Length];
+                    while (i < input0.Length && j < input1.Length)
+                    {
+                        if (input0[i] < input1[j])
+                            temp[k++] = input0[i++];
+                        else if (input0[i] > input1[j])
+                            temp[k++] = input1[j++];
+                        else
+                        {
+                            temp[k++] = input0[i];
+                            i++;
+                            j++;
+                        }
+                    }
+                    while (i < input0.Length) temp[k++] = input0[i++];
+                    while (j < input1.Length) temp[k++] = input1[j++];
+                    output = TrimArray(temp, k);
+                    break;
+                case Task6Modes.INTERSECTION:
+                    temp = new int[Math.Min(input0.Length, input1.Length)];
+                    while (i < input0.Length && j < input1.Length)
+                    {
+                        if (input0[i] < input1[j])
+                            i++;
+                        else if (input0[i] > input1[j])
+                            j++;
+                        else
+                        {
+                            temp[k++] = input0[i];
+                            i++;
+                            j++;
+                        }
+                    }
+                    output = TrimArray(temp, k);
+                    break;
+                case Task6Modes.DIFFERENCE:
+                    temp = new int[input0.Length];
+                    while (i < input0.Length && j < input1.Length)
+                    {
+                        if (input0[i] < input1[j])
+                            temp[k++] = input0[i++];
+                        else if (input0[i] > input1[j])
+                            j++;
+                        else
+                        {
+                            i++;
+                            j++;
+                        }
+                    }
+                    while (i < input0.Length) temp[k++] = input0[i++];
+                    output = TrimArray(temp, k);
+                    break;
+            }
+            Custom.WriteColored($"\nРезультат дії ", White, $"{mode}", Yellow, $" між двома масивами:\n{String.Join(" ", output)}\n", White);
+            static int[] TrimArray(int[] array, int size)
+            {
+                int[] result = new int[size];
+                for (int i = 0; i < size; i++)
+                    result[i] = array[i];
+                return result;
+            }
         }
         public void Task7(IT inputType)
         {
-            var input = Init<double>(inputType);
+            var input = InitArray<double>(inputType);
 
         }
         public void Task8(IT inputType)
         {
-            var input = Init<double>(inputType);
+            var input = InitArray<double>(inputType);
 
         }
     }
@@ -460,11 +562,16 @@ namespace Lab4
     {
         protected override T[] InitRand<T>(Task forTask)
         {
-            //T[] output;
+            T[] output;
             //var rn = new Random();
             //uint num;
             switch (forTask)
             {
+                case Task._6:
+                    output = base.InitRand<T>(Task._6);
+                    Array.Sort(output);
+                    Custom.WriteColored($"Результат:\n{String.Join(" ", output)}\n", White);
+                    return output;
                 default:
                     return base.InitRand<T>(forTask);
             }
@@ -491,6 +598,10 @@ namespace Lab4
                         }
                         catch { Custom.WriteColored($"Неправильний тип введення\n", Red); }
                     return output;
+                case Task._6:
+                    output = base.InitInLine<T>(0);
+                    Array.Sort(output);
+                    return output;
                 default:
                     return base.InitInLine<T>(forTask);
 
@@ -498,9 +609,13 @@ namespace Lab4
         }
         protected override T[] InitInColon<T>(Task forTask)
         {
-            //T[] output;
+            T[] output;
             switch (forTask)
             {
+                case Task._6:
+                    output = base.InitInColon<T>(0);
+                    Array.Sort(output);
+                    return output;
                 default:
                     return base.InitInColon<T>(forTask);
             }
@@ -508,7 +623,7 @@ namespace Lab4
 
         public void Task1(IT inputType)
         {
-            var input = Init<double>(inputType);
+            var input = InitArray<double>(inputType);
             double maxValue = input.Max();
             int maxIndex = Array.FindLastIndex(input, input.Length - 1, input.Length, x => x == maxValue);
             if (maxIndex == 0)
@@ -524,7 +639,7 @@ namespace Lab4
         }
         public void Task2(IT inputType)
         {
-            double[] input = Init<double>(inputType);
+            double[] input = InitArray<double>(inputType);
             Custom.WriteColored("Введіть число K\n", White);
             int k = Custom.ReadLine(int.Parse, true, "Неправильний тип введення", Red, Yellow, true);
             double[] sortedArray = (double[])input.Clone();
@@ -535,7 +650,7 @@ namespace Lab4
         }
         public void Task3(IT inputType)
         {
-            var input = Init<int>(inputType, Task._3);
+            var input = InitArray<int>(inputType, Task._3);
             var (answer, num) = ("", 0);
             input[0]--; input[1]++;
             Custom.WriteColored("Типи відовідей:\n", White,
@@ -564,7 +679,7 @@ namespace Lab4
             int[] input0;
             int[] input1;
 
-            input0 = Init<int>(inputType, Task._4);
+            input0 = InitArray<int>(inputType, Task._4);
             if (inputType == IT.Random)
             {
                 Random random = new Random();
@@ -576,7 +691,7 @@ namespace Lab4
             {
                 while (true)
                 {
-                    input1 = Init<int>(inputType, Task._4);
+                    input1 = InitArray<int>(inputType, Task._4);
                     if (input0.Length < input1.Length)
                     {
                         Custom.WriteColored("\nКількість елементів другого масиву не може перевищувати кількість елементів першого\n\n", Red, "Введіть повторно другий масив:\n", White);
@@ -592,13 +707,13 @@ namespace Lab4
         }
         public void Task5(IT inputType)
         {
-            var input0 = Init<int>(inputType);
-            var input1 = Init<int>(inputType);            
+            var input0 = InitArray<int>(inputType);
+            var input1 = InitArray<int>(SelectInputType());
             Array.Sort(input0);
-            for (int i = 0; i < input1.Length; i++) 
+            for (int i = 0; i < input1.Length; i++)
             {
                 var firstIndex = Array.FindIndex(input0, 0, input0.Length, x => x == input1[i]) + 1;
-                if (firstIndex == 0) 
+                if (firstIndex == 0)
                     Custom.WriteColored("0\n", White);
                 else
                 {
@@ -609,17 +724,37 @@ namespace Lab4
         }
         public void Task6(IT inputType)
         {
-            var input = Init<double>(inputType);
+            Custom.WriteColored("Виберіть дію:\n", White,
+                    "1", Yellow, " - Об'єднання.\n", White,
+                    "2", Yellow, " - Перетин.\n", White,
+                    "3", Yellow, " - Різниця.\n", White);
+            var mode = Custom.ReadLine(FixedEnumParse<Task6Modes>, true, "Неправильний тип введення", Red, Yellow, true);
+            var input0 = InitArray<int>(inputType, Task._6);
+            var input1 = InitArray<int>(inputType, Task._6);
+            int[] output = [];
 
+            switch (mode)
+            {
+                case Task6Modes.UNION:
+                    output = input0.Union(input1).ToArray();
+                    break;
+                case Task6Modes.INTERSECTION:
+                    output = input0.Intersect(input1).ToArray();
+                    break;
+                case Task6Modes.DIFFERENCE:
+                    output = input0.Except(input1).ToArray();
+                    break;
+            }
+            Custom.WriteColored($"\nРезультат дії ", White, $"{mode}", Yellow, $" між двома масивами:\n{string.Join(" ", output)}\n", White);
         }
         public void Task7(IT inputType)
         {
-            var input = Init<double>(inputType);
+            var input = InitArray<double>(inputType);
 
         }
         public void Task8(IT inputType)
         {
-            var input = Init<double>(inputType);
+            var input = InitArray<double>(inputType);
 
         }
     }
@@ -632,7 +767,7 @@ namespace Lab4
             public BigRational(BigInteger mantissa, BigInteger exponent) => (Mantissa, Exponent) = (mantissa, exponent);
             private static BigRational FromDouble(double value)
             {
-                if (value == 0) return 0;
+                if (value == 0) return new BigRational(0, 0);
                 bool isNegative = value < 0;
                 value = Math.Abs(value);
                 string valueStr = value.ToString("0.#######################################################E+00");
@@ -782,6 +917,12 @@ namespace Lab4
             public void Task7(IT inputType);
             public void Task8(IT inputType);
         }
+        public enum Task6Modes
+        {
+            UNION = 1,
+            INTERSECTION,
+            DIFFERENCE,
+        }
         public enum AMU
         {
             Exit,
@@ -805,7 +946,7 @@ namespace Lab4
             InLine,
             InCollon,
         }
-        private static TEnum FixedEnumParse<TEnum>(string value) where TEnum : struct
+        static public TEnum FixedEnumParse<TEnum>(string value) where TEnum : struct
         {
             TEnum x = Enum.Parse<TEnum>(value);
             if (!Enum.IsDefined(typeof(TEnum), x))
@@ -833,8 +974,7 @@ namespace Lab4
                                 "6", Yellow, " - Задача A «Операції над множинами» зі змагання «61 День Іллі Порубльова \"Школи Бобра\".\n", White,
                                 "7", Yellow, " - Задача B «Всюдисущi числа» зі змагання «61 День Іллі Порубльова \"Школи Бобра\".\n", White,
                                 "8", Yellow, " - Задача C «Школярi з хмарочосiв» зі змагання «61 День Іллі Порубльова \"Школи Бобра\".\n", White);
-            var x = Custom.ReadLine(FixedEnumParse<Task>, true, "Неправильний тип введення", Red, Yellow, true);
-            return x;
+            return Custom.ReadLine(FixedEnumParse<Task>, true, "Неправильний тип введення", Red, Yellow, true);
         }
         static public IT SelectInputType()
         {
@@ -842,14 +982,13 @@ namespace Lab4
                                 "1", Yellow, " - Заповнити масив випадковими числами.\n", White,
                                 "2", Yellow, " - Заповнити масив числами в рядок через пробіл.\n", White,
                                 "3", Yellow, " - Заповнити масив в стовпчик через ", White, "Enter\n", Yellow);
-            var x = Custom.ReadLine(FixedEnumParse<IT>, true, "Неправильний тип введення", Red, Yellow, true);
-            return x;
+            return Custom.ReadLine(FixedEnumParse<IT>, true, "Неправильний тип введення", Red, Yellow, true);
         }
         static public void StartTask(AMU arrayMethodsUsage, Task taskNum, IT inputType)
         {
             ITaskContaiter TaskContainer = (arrayMethodsUsage == AMU.Nah) ? new AMLR() : new AMFR();
             Custom.WriteColored(
-                "\nЗапускаю задачу ", White, $"{taskNum} ", Yellow,
+                "\nЗапускаю задачу ", White, $"{(int)taskNum} ", Yellow,
                 ((arrayMethodsUsage == AMU.Nah) ? "без використання " : "з використанням ") + "методів класу System.", White, "Array ", DarkGreen,
                 "та використанням " + inputType switch
                 {
@@ -879,7 +1018,7 @@ namespace Lab4
         static void Main()
         {
             Console.OutputEncoding = System.Text.Encoding.Unicode;
-            while (true) StartTask(SelectArrayMethodsUsage(), SelectTask(), SelectInputType());            
+            while (true) StartTask(SelectArrayMethodsUsage(), SelectTask(), SelectInputType());
         }
     }
 }
