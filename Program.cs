@@ -63,15 +63,15 @@ namespace Lab4
     }
     abstract class ArrayInit
     {
-        protected T[] InitArray<T>(IT inputType, Task forTask = 0) where T : IConvertible, IComparable =>
+        protected T[] InitArray<T>(IT inputType, Task forTask = 0, string data = "") where T : IConvertible, IComparable =>
             inputType switch
             {
-                IT.Random => InitRand<T>(forTask),
-                IT.InLine => InitInLine<T>(forTask),
-                IT.InCollon => InitInColon<T>(forTask),
+                IT.Random => InitRand<T>(forTask, data),
+                IT.InLine => InitInLine<T>(forTask, data),
+                IT.InCollon => InitInColon<T>(forTask, data),
                 _ => throw new Exception("Somwting went wrong")
             };
-        protected virtual T[] InitRand<T>(Task forTask) where T : IConvertible, IComparable
+        protected virtual T[] InitRand<T>(Task forTask, string data = "") where T : IConvertible, IComparable
         {
             T[] output = [];
             var rn = new Random();
@@ -109,6 +109,8 @@ namespace Lab4
                     }
                     while (num == 0);
                     return output;
+                case Task._7:
+
                 default:
                     do
                     {
@@ -128,11 +130,23 @@ namespace Lab4
                     return output;
             }
         }
-        protected virtual T[] InitInLine<T>(Task forTask) where T : IConvertible, IComparable
+        protected virtual T[] InitInLine<T>(Task forTask, string data = "") where T : IConvertible, IComparable
         {
             T[] output;
             switch (forTask)
             {
+                case Task._7:
+                    while (true)
+                        try
+                        {
+                            var input = Custom.ReadLine(Yellow, true).Split(' ', '\t');
+                            output = new T[input.Length];
+                            for (int i = 0; i < input.Length; i++)
+                                output[i] = (T)Convert.ChangeType(input[i], typeof(T));
+                            break;
+                        }
+                        catch { Custom.WriteColored("Неправильний тип введення\n", Red); }
+                    return output;
                 default:
                     Custom.WriteColored("Введіть послідовно елементи масиву через пробіл або/та табуляцію:\n", White);
                     while (true)
@@ -148,7 +162,7 @@ namespace Lab4
                     return output;
             }
         }
-        protected virtual T[] InitInColon<T>(Task forTask) where T : IConvertible, IComparable
+        protected virtual T[] InitInColon<T>(Task forTask, string data = "") where T : IConvertible, IComparable
         {
             T[] output = [];
             uint num;
@@ -194,10 +208,64 @@ namespace Lab4
                     return output;
             }
         }
+        protected T[][] InitArrayOfArray<T>(IT inputType) where T : IConvertible, IComparable
+        {
+            int[] size = new int[2];
+            Custom.WriteColored("Введіть розмірність 2-вимірного масиву:\n", White);
+            while (true)
+                try
+                {
+                    var temp = InitArray<int>(IT.InLine, Task._7);
+                    if (temp.Length != 2)
+                    {
+                        Custom.WriteColored("Введіть 2 числа\n", Red);
+                        continue;
+                    }
+                    size = temp;
+                    break;
+                }
+                catch { Custom.WriteColored("Неправильний тип введення\n", Red); }
+            T[][] output = new T[size[0]][];
+            for (int i = 0; i < output.Length; i++)
+                output[i] = new T[size[1]];
+
+            switch (inputType)
+            {
+                case IT.Random:
+                    for (int i = 0; i < size[0]; i++)
+                        output[i] = InitArray<T>(inputType, Task._7, $"{size[1]}");
+                    Custom.WriteColored("Результат:\n", White);
+                    for (int i = 0; i < output.Length; i++)
+                        Custom.WriteColored($"{String.Join(" ", output[i])}\n", White);
+                    break;
+                case IT.InLine:
+                    Custom.WriteColored($"Введіть {size[0]} масивів по {size[1]} елементів.\n", White);
+                    for (int i = 0; i < output.Length; i++)
+                        while (true)
+                        {
+                            output[i] = InitArray<T>(IT.InLine, Task._7);
+                            if (output[i].Length != size[1])
+                                Custom.WriteColored($"Кількість елементів має бути {size[1]}\n", Red);
+                            else
+                                break;
+                        }
+                    break;
+                case IT.InCollon:
+                    Custom.WriteColored($"Введіть {size[0] * size[1]} елементів що автоматично розташуються в масиві {size[0]} на {size[1]}.\n", White);
+                    for (int i = 0; i < size[0]; i++)
+                        for (int j = 0; j < size[1]; j++)                                                    
+                            output[i][j] = (T)Convert.ChangeType(Custom.ReadLine(long.Parse, true, "Неправильний тип введення", Red, Yellow, true), typeof(T));                        
+                    Custom.WriteColored("Результат:\n", White);
+                    for (int i = 0; i < output.Length; i++)
+                        Custom.WriteColored($"{String.Join(" ", output[i])}\n", White);
+                    break;
+            }
+            return output;
+        }
     }
     class ArrayMethodLessRealization : ArrayInit, ITaskContaiter
     {
-        protected override T[] InitRand<T>(Task forTask)
+        protected override T[] InitRand<T>(Task forTask, string data = "")
         {
             T[] output;
             //var rn = new Random();
@@ -227,7 +295,7 @@ namespace Lab4
                     return base.InitRand<T>(forTask);
             }
         }
-        protected override T[] InitInLine<T>(Task forTask)
+        protected override T[] InitInLine<T>(Task forTask, string data = "")
         {
             T[] output;
             switch (forTask)
@@ -259,7 +327,7 @@ namespace Lab4
                     return base.InitInLine<T>(forTask);
             }
         }
-        protected override T[] InitInColon<T>(Task forTask)
+        protected override T[] InitInColon<T>(Task forTask, string data = "")
         {
             //T[] output;
             switch (forTask)
@@ -549,9 +617,58 @@ namespace Lab4
         }
         public void Task7(IT inputType)
         {
-            var input = InitArray<double>(inputType);
+            void Sort<T>(T[] array) where T : IComparable
+            {
+                for (int i = 0; i < array.Length - 1; i++)
+                {
+                    int minIndex = i;
+                    for (int j = i + 1; j < array.Length; j++)
+                        if (array[j].CompareTo(array[minIndex]) < 0)
+                            minIndex = j;
+                    T temp = array[i];
+                    array[i] = array[minIndex];
+                    array[minIndex] = temp;
+                }
+            }
+            static int[] FindIntersection(int[] input0, int[] input1)
+            {
+                int[] temp = new int[Math.Min(input0.Length, input1.Length)];
+                int i = 0, j = 0, k = 0;
 
-        }
+                while (i < input0.Length && j < input1.Length)
+                {
+                    if (input0[i] < input1[j])
+                        i++;
+                    else if (input0[i] > input1[j])
+                        j++;
+                    else
+                    {
+                        temp[k++] = input0[i];
+                        i++;
+                        j++;
+                    }
+                }
+
+                return TrimArray(temp, k);
+            }
+            static int[] TrimArray(int[] array, int size)
+            {
+                int[] result = new int[size];
+                for (int i = 0; i < size; i++)
+                    result[i] = array[i];
+                return result;
+            }
+
+            var input = InitArrayOfArray<int>(inputType);
+            for (int i = 0; i < input.Length; i++)            
+                Sort(input[i]);             
+            
+            int[] commonElements = input[0];
+            for (int i = 1; i < input.Length; i++)            
+                commonElements = FindIntersection(commonElements, input[i]);
+
+            Custom.WriteColored($"Cпільні елементи в усіх {input.Length} масивах:\n{String.Join(" ", commonElements)}\n", White);
+        }                
         public void Task8(IT inputType)
         {
             var input = InitArray<double>(inputType);
@@ -560,11 +677,11 @@ namespace Lab4
     }
     class ArrayMethodFulRealization : ArrayInit, ITaskContaiter
     {
-        protected override T[] InitRand<T>(Task forTask)
+        protected override T[] InitRand<T>(Task forTask, string data = "")
         {
             T[] output;
-            //var rn = new Random();
-            //uint num;
+            var rn = new Random();
+            uint num;
             switch (forTask)
             {
                 case Task._6:
@@ -572,11 +689,22 @@ namespace Lab4
                     Array.Sort(output);
                     Custom.WriteColored($"Результат:\n{String.Join(" ", output)}\n", White);
                     return output;
+                case Task._7:
+                    do
+                    {
+                        num = uint.Parse(data);
+                        Func<T> random = () => (T)Convert.ChangeType(rn.Next(-15, 15), typeof(T));
+                        output = new T[num];
+                        for (int i = 0; i < num; i++)
+                            output[i] = random();
+                    }
+                    while (num == 0);
+                    return output;
                 default:
                     return base.InitRand<T>(forTask);
             }
         }
-        protected override T[] InitInLine<T>(Task forTask)
+        protected override T[] InitInLine<T>(Task forTask, string data = "")
         {
             T[] output;
             switch (forTask)
@@ -607,7 +735,7 @@ namespace Lab4
 
             }
         }
-        protected override T[] InitInColon<T>(Task forTask)
+        protected override T[] InitInColon<T>(Task forTask, string data = "")
         {
             T[] output;
             switch (forTask)
@@ -749,8 +877,9 @@ namespace Lab4
         }
         public void Task7(IT inputType)
         {
-            var input = InitArray<double>(inputType);
-
+            var input = InitArrayOfArray<int>(inputType);         
+            var commonElements = input[0].Where(element => input.All(row => row.Contains(element))).OrderBy(x => x);
+            Custom.WriteColored($"Cпільні елементи в усіх {input.Length} масивах:\n{String.Join(" ", commonElements)}\n", White);
         }
         public void Task8(IT inputType)
         {
@@ -759,7 +888,7 @@ namespace Lab4
         }
     }
     public static class Other
-    {
+    {        
         public struct BigRational
         {
             private BigInteger Mantissa { get; set; }
@@ -984,10 +1113,10 @@ namespace Lab4
                                 "3", Yellow, " - Заповнити масив в стовпчик через ", White, "Enter\n", Yellow);
             return Custom.ReadLine(FixedEnumParse<IT>, true, "Неправильний тип введення", Red, Yellow, true);
         }
-        static public void StartTask(AMU arrayMethodsUsage, Task taskNum, IT inputType)
+        static public void StartTask(AMU arrayMethodsUsage, Task taskNum, IT inputType, bool mute = false)
         {
             ITaskContaiter TaskContainer = (arrayMethodsUsage == AMU.Nah) ? new AMLR() : new AMFR();
-            Custom.WriteColored(
+            if (!mute) Custom.WriteColored(
                 "\nЗапускаю задачу ", White, $"{(int)taskNum} ", Yellow,
                 ((arrayMethodsUsage == AMU.Nah) ? "без використання " : "з використанням ") + "методів класу System.", White, "Array ", DarkGreen,
                 "та використанням " + inputType switch
