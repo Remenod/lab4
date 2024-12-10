@@ -253,8 +253,8 @@ namespace Lab4
                 case IT.InCollon:
                     Custom.WriteColored($"Введіть {size[0] * size[1]} елементів що автоматично розташуються в масиві {size[0]} на {size[1]}.\n", White);
                     for (int i = 0; i < size[0]; i++)
-                        for (int j = 0; j < size[1]; j++)                                                    
-                            output[i][j] = (T)Convert.ChangeType(Custom.ReadLine(long.Parse, true, "Неправильний тип введення", Red, Yellow, true), typeof(T));                        
+                        for (int j = 0; j < size[1]; j++)
+                            output[i][j] = (T)Convert.ChangeType(Custom.ReadLine(long.Parse, true, "Неправильний тип введення", Red, Yellow, true), typeof(T));
                     Custom.WriteColored("Результат:\n", White);
                     for (int i = 0; i < output.Length; i++)
                         Custom.WriteColored($"{String.Join(" ", output[i])}\n", White);
@@ -277,20 +277,6 @@ namespace Lab4
                     Sort(output);
                     Custom.WriteColored($"Результат:\n{String.Join(" ", output)}\n", White);
                     return output;
-                    void Sort(T[] array)
-                    {
-                        for (int i = 0; i < array.Length - 1; i++)
-                        {
-                            int minIndex = i;
-                            for (int j = i + 1; j < array.Length; j++)
-                                if (array[j].CompareTo(array[minIndex]) < 0)
-                                    minIndex = j;
-                            T temp = array[i];
-                            array[i] = array[minIndex];
-                            array[minIndex] = temp;
-                        }
-                    }
-
                 default:
                     return base.InitRand<T>(forTask);
             }
@@ -408,9 +394,7 @@ namespace Lab4
         }
         public void Task4(IT inputType)
         {
-            int[] input0;
-            int[] input1;
-
+            int[] input0, input1;
             input0 = InitArray<int>(inputType, Task._4);
             if (inputType == IT.Random)
             {
@@ -433,7 +417,7 @@ namespace Lab4
                 }
             }
 
-            void Sort(int[] array, int[] indices)
+            void SortWithIndices(int[] array, int[] indices)
             {
                 for (int i = 0; i < array.Length; i++)
                     indices[i] = i;
@@ -454,24 +438,18 @@ namespace Lab4
                     indices[minIndex] = tempIndex;
                 }
             }
-
             int[] indices = new int[input0.Length];
-            Sort(input0, indices);
+            SortWithIndices(input0, indices);
 
             string result = "";
             foreach (var x in input1)
-            {
                 for (int i = 0; i < input0.Length; i++)
-                {
                     if (input0[i] == x)
                     {
                         result += $"{indices[i] + 1} ";
                         break;
                     }
-                }
-            }
             Custom.WriteColored($"Номери елементів з другого масиву в відсортованому першому:\n{result}\n", White);
-
         }
         public void Task5(IT inputType)
         {
@@ -524,19 +502,6 @@ namespace Lab4
                         right = mid - 1;
                 }
                 return result;
-            }
-            void Sort(int[] array)
-            {
-                for (int i = 0; i < array.Length - 1; i++)
-                {
-                    int minIndex = i;
-                    for (int j = i + 1; j < array.Length; j++)
-                        if (array[j] < array[minIndex])
-                            minIndex = j;
-                    int temp = array[i];
-                    array[i] = array[minIndex];
-                    array[minIndex] = temp;
-                }
             }
         }
         public void Task6(IT inputType)
@@ -617,19 +582,6 @@ namespace Lab4
         }
         public void Task7(IT inputType)
         {
-            void Sort<T>(T[] array) where T : IComparable
-            {
-                for (int i = 0; i < array.Length - 1; i++)
-                {
-                    int minIndex = i;
-                    for (int j = i + 1; j < array.Length; j++)
-                        if (array[j].CompareTo(array[minIndex]) < 0)
-                            minIndex = j;
-                    T temp = array[i];
-                    array[i] = array[minIndex];
-                    array[minIndex] = temp;
-                }
-            }
             static int[] FindIntersection(int[] input0, int[] input1)
             {
                 int[] temp = new int[Math.Min(input0.Length, input1.Length)];
@@ -648,7 +600,6 @@ namespace Lab4
                         j++;
                     }
                 }
-
                 return TrimArray(temp, k);
             }
             static int[] TrimArray(int[] array, int size)
@@ -660,15 +611,15 @@ namespace Lab4
             }
 
             var input = InitArrayOfArray<int>(inputType);
-            for (int i = 0; i < input.Length; i++)            
-                Sort(input[i]);             
-            
+            for (int i = 0; i < input.Length; i++)
+                Sort(input[i]);
+
             int[] commonElements = input[0];
-            for (int i = 1; i < input.Length; i++)            
+            for (int i = 1; i < input.Length; i++)
                 commonElements = FindIntersection(commonElements, input[i]);
 
             Custom.WriteColored($"Cпільні елементи в усіх {input.Length} масивах:\n{String.Join(" ", commonElements)}\n", White);
-        }                
+        }
         public void Task8(IT inputType)
         {
             var input = InitArray<double>(inputType);
@@ -877,7 +828,7 @@ namespace Lab4
         }
         public void Task7(IT inputType)
         {
-            var input = InitArrayOfArray<int>(inputType);         
+            var input = InitArrayOfArray<int>(inputType);
             var commonElements = input[0].Where(element => input.All(row => row.Contains(element))).OrderBy(x => x);
             Custom.WriteColored($"Cпільні елементи в усіх {input.Length} масивах:\n{String.Join(" ", commonElements)}\n", White);
         }
@@ -888,7 +839,7 @@ namespace Lab4
         }
     }
     public static class Other
-    {        
+    {
         public struct BigRational
         {
             private BigInteger Mantissa { get; set; }
@@ -903,8 +854,13 @@ namespace Lab4
                 var valueStrSplit = valueStr.Split('e', 'E');
                 var result = (mantissa: double.Parse(valueStrSplit[0]), exponent: int.Parse(valueStrSplit[1]));
                 string[] parts = valueStrSplit[0].Split('.', ',');
-                if (parts.Length == 1) return new((BigInteger)result.mantissa * BigInteger.Pow(10, result.exponent), 0);
-                result.mantissa = double.Parse(parts[0] + parts[1]);
+                if (parts.Length == 1)
+                {
+                    parts = [parts[0], ""];
+                    if (result.exponent > 0)
+                        return new((BigInteger)result.mantissa * BigInteger.Pow(10, result.exponent), 0);
+                }
+                result.mantissa = double.Parse($"{parts[0]}" + $"{parts[1]}");
                 int decimalPlaces = parts[1].Length;
                 result.exponent += -decimalPlaces;
                 if (isNegative) result.mantissa = -result.mantissa;
@@ -1045,6 +1001,19 @@ namespace Lab4
             public void Task6(IT inputType);
             public void Task7(IT inputType);
             public void Task8(IT inputType);
+        }
+        static public void Sort<T>(T[] array) where T : IComparable
+        {
+            for (int i = 0; i < array.Length - 1; i++)
+            {
+                int minIndex = i;
+                for (int j = i + 1; j < array.Length; j++)
+                    if (array[j].CompareTo(array[minIndex]) < 0)
+                        minIndex = j;
+                T temp = array[i];
+                array[i] = array[minIndex];
+                array[minIndex] = temp;
+            }
         }
         public enum Task6Modes
         {
