@@ -5,7 +5,6 @@ using static System.ConsoleColor;
 using static Lab4.Other;
 using AMFR = Lab4.ArrayMethodFulRealization;
 using AMLR = Lab4.ArrayMethodLessRealization;
-
 namespace Lab4
 {
     public static class Custom
@@ -321,17 +320,15 @@ namespace Lab4
         protected override T[] InitRand<T>(Task forTask, string data = "")
         {
             T[] output;
-            //var rn = new Random();
-            //uint num;
             switch (forTask)
             {
                 case Task._6:
                     output = base.InitRand<T>(Task._6);
                     Sort(output);
                     Custom.WriteColored($"Результат:\n{String.Join(" ", output)}\n", White);
-                    return output;
+                    return output;                                    
                 default:
-                    return base.InitRand<T>(forTask);
+                    return base.InitRand<T>(forTask, data);
             }
         }
         protected override T[] InitInLine<T>(Task forTask, string data = "")
@@ -362,17 +359,25 @@ namespace Lab4
                         }
                         catch { Custom.WriteColored("Неправильний тип введення\n", Red); }
                     return output;
+                case Task._6:
+                    output = base.InitInLine<T>(0);
+                    Sort(output);
+                    return output;
                 default:
-                    return base.InitInLine<T>(forTask);
+                    return base.InitInLine<T>(forTask, data);
             }
         }
         protected override T[] InitInColon<T>(Task forTask, string data = "")
         {
-            //T[] output;
+            T[] output;
             switch (forTask)
             {
+                case Task._6:
+                    output = base.InitInColon<T>(0);
+                    Sort(output);
+                    return output;
                 default:
-                    return base.InitInColon<T>(forTask);
+                    return base.InitInColon<T>(forTask, data);
             }
         }
 
@@ -713,7 +718,7 @@ namespace Lab4
                     Custom.WriteColored($"Результат:\n{String.Join(" ", output)}\n", White);
                     return output;                
                 default:
-                    return base.InitRand<T>(forTask);
+                    return base.InitRand<T>(forTask, data);
             }
         }
         protected override T[] InitInLine<T>(Task forTask, string data = "")
@@ -743,7 +748,7 @@ namespace Lab4
                     Array.Sort(output);
                     return output;
                 default:
-                    return base.InitInLine<T>(forTask);
+                    return base.InitInLine<T>(forTask, data);
 
             }
         }
@@ -757,7 +762,7 @@ namespace Lab4
                     Array.Sort(output);
                     return output;
                 default:
-                    return base.InitInColon<T>(forTask);
+                    return base.InitInColon<T>(forTask, data);
             }
         }
 
@@ -908,12 +913,7 @@ namespace Lab4
                 arrivals[i] = (times1[i] + t1, 1, i + 1);            
             for (int i = 0; i < times2.Length; i++)            
                 arrivals[times1.Length + i] = (times2[i] + t2, 2, i + 1);            
-            Array.Sort(arrivals, (a, b) =>
-            {
-                if (a.arriveTime != b.arriveTime)
-                    return a.arriveTime.CompareTo(b.arriveTime);
-                return a.building.CompareTo(b.building);
-            });
+            Array.Sort(arrivals);
 
             Custom.WriteColored("Порядок прибуття школярів:\n", White);
             foreach (var (arriveTime, building, student) in arrivals)            
