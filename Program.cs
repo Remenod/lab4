@@ -110,7 +110,29 @@ namespace Lab4
                     while (num == 0);
                     return output;
                 case Task._7:
-
+                    do
+                    {
+                        num = uint.Parse(data);
+                        Func<T> random = () => (T)Convert.ChangeType(rn.Next(-15, 15), typeof(T));
+                        output = new T[num];
+                        for (int i = 0; i < num; i++)
+                            output[i] = random();
+                    }
+                    while (num == 0);
+                    return output;
+                case Task._8:
+                    do
+                    {
+                        Custom.WriteColored($"Введіть кількість школярів в {data} хмарочосі для генерації часу виходу від 0 до 25:\n", White);
+                        num = Custom.ReadLine(uint.Parse, true, "Неправильний тип введення", Red, Yellow, true);                        
+                        Func<T> random = () => (T)Convert.ChangeType(rn.Next(0, 26), typeof(T));
+                        output = new T[num];
+                        for (int i = 0; i < num; i++)
+                            output[i] = random();
+                        Custom.WriteColored($"Результат:\n{String.Join(" ", output)}\n", White);
+                    }
+                    while (num == 0);
+                    return output;
                 default:
                     do
                     {
@@ -147,6 +169,20 @@ namespace Lab4
                         }
                         catch { Custom.WriteColored("Неправильний тип введення\n", Red); }
                     return output;
+                case Task._8:
+                    Custom.WriteColored("Введіть послідовно через скільки часу виходив кожен школяр з хмарочосу через пробіл або/та табуляцію:\n", White);
+                    while (true)
+                        try
+                        {
+                            var input = Custom.ReadLine(Yellow, true).Split(' ', '\t');
+                            output = new T[input.Length];
+                            for (int i = 0; i < input.Length; i++)
+                                output[i] = (T)Convert.ChangeType(input[i], typeof(T));
+                            break;
+                        }
+                        catch { Custom.WriteColored("Неправильний тип введення\n", Red); }
+                    Sort(output);
+                    return output;
                 default:
                     Custom.WriteColored("Введіть послідовно елементи масиву через пробіл або/та табуляцію:\n", White);
                     while (true)
@@ -179,6 +215,23 @@ namespace Lab4
                         if (output[1].CompareTo(output[0]) >= 0) break;
                         Custom.WriteColored("Друга межа має бути більшою\n", Red);
                     }
+                    return output;
+                case Task._8:
+                    Custom.WriteColored($"Введіть кількість школярів в {data} хмарочосі:\n", White);
+                    num = Custom.ReadLine(uint.Parse, true, "Неправильний тип введення", Red, Yellow, true);
+                    Custom.WriteColored("Введіть послідовно через скільки часу виходив кожен школяр з хмарочосу через ", White, "Enter", Yellow, ":\n", White);
+                    output = new T[num];
+                    for (int i = 0; i < num; i++)
+                        try
+                        {
+                            Custom.WriteColored($"{i + 1}: ", White);
+                            output[i] = (T)Convert.ChangeType(Custom.ReadLine(double.Parse, false, Yellow), typeof(T));
+                        }
+                        catch (Exception e) when (e is ArgumentException)
+                        {
+                            Custom.WriteColored("Неправильний тип введення\n", Red);
+                            i--;
+                        }
                     return output;
                 default:
                     while (true)
@@ -622,8 +675,27 @@ namespace Lab4
         }
         public void Task8(IT inputType)
         {
-            var input = InitArray<double>(inputType);
+            Custom.WriteColored("Введіть скільки часу потрібно щоб дійти до школи від першого хмарочосу:\n", White);
+            int t1 = Custom.ReadLine(int.Parse, true, "Неправильний тип введення", Red, Yellow, true);
+            int[] times1 = InitArray<int>(inputType, Task._8, "першому");
 
+            Custom.WriteColored("Введіть скільки часу потрібно щоб дійти до школи від другого хмарочосу:\n", White);
+            int t2 = Custom.ReadLine(int.Parse, true, "Неправильний тип введення", Red, Yellow, true);
+            int[] times2 = InitArray<int>(inputType, Task._8, "другому");
+            
+            (int arriveTime, int building, int student)[] arrivals = new (int, int, int)[times1.Length + times2.Length];
+
+            for (int i = 0; i < times1.Length; i++)
+                arrivals[i] = (times1[i] + t1, 1, i + 1);
+
+            for (int i = 0; i < times2.Length; i++)
+                arrivals[times1.Length + i] = (times2[i] + t2, 2, i + 1);
+            
+            Sort(arrivals);
+            
+            Custom.WriteColored("Порядок прибуття школярів:\n", White);
+            foreach (var (arriveTime, building, student) in arrivals)
+                Custom.WriteColored("Прибув через: ", White, $"{arriveTime} ", Yellow, $"часу, з хмарочоса номер ", White, $"{building}, ", Yellow, "вийшовши з того ", White, $"{student} ", Yellow, "по порядку\n", White);
         }
     }
     class ArrayMethodFulRealization : ArrayInit, ITaskContaiter
@@ -639,18 +711,7 @@ namespace Lab4
                     output = base.InitRand<T>(Task._6);
                     Array.Sort(output);
                     Custom.WriteColored($"Результат:\n{String.Join(" ", output)}\n", White);
-                    return output;
-                case Task._7:
-                    do
-                    {
-                        num = uint.Parse(data);
-                        Func<T> random = () => (T)Convert.ChangeType(rn.Next(-15, 15), typeof(T));
-                        output = new T[num];
-                        for (int i = 0; i < num; i++)
-                            output[i] = random();
-                    }
-                    while (num == 0);
-                    return output;
+                    return output;                
                 default:
                     return base.InitRand<T>(forTask);
             }
@@ -722,9 +783,8 @@ namespace Lab4
             Custom.WriteColored("Введіть число K\n", White);
             int k = Custom.ReadLine(int.Parse, true, "Неправильний тип введення", Red, Yellow, true);
             double[] sortedArray = (double[])input.Clone();
-            Array.Sort(sortedArray);
-            Array.Reverse(sortedArray);
-            int position = Array.IndexOf(input, sortedArray[k - 1]) + 1;
+            Array.Sort(sortedArray);            
+            int position = Array.IndexOf(input, sortedArray[^k]) + 1;
             Custom.WriteColored("Номер K-го елемента по спаданню: ", White, $"{position}\n", Yellow);
         }
         public void Task3(IT inputType)
@@ -834,8 +894,30 @@ namespace Lab4
         }
         public void Task8(IT inputType)
         {
-            var input = InitArray<double>(inputType);
+            Custom.WriteColored("Введіть скільки часу потрібно щоб дійти до школи від першого хмарочосу:\n", White);
+            int t1 = Custom.ReadLine(int.Parse, true, "Неправильний тип введення", Red, Yellow, true);
+            int[] times1 = InitArray<int>(inputType, Task._8, "першому");
 
+            Custom.WriteColored("Введіть скільки часу потрібно щоб дійти до школи від другого хмарочосу:\n", White);
+            int t2 = Custom.ReadLine(int.Parse, true, "Неправильний тип введення", Red, Yellow, true);
+            int[] times2 = InitArray<int>(inputType, Task._8, "другому");
+            
+            (int arriveTime, int building, int student)[] arrivals = new (int, int, int)[times1.Length + times2.Length];
+           
+            for (int i = 0; i < times1.Length; i++)            
+                arrivals[i] = (times1[i] + t1, 1, i + 1);            
+            for (int i = 0; i < times2.Length; i++)            
+                arrivals[times1.Length + i] = (times2[i] + t2, 2, i + 1);            
+            Array.Sort(arrivals, (a, b) =>
+            {
+                if (a.arriveTime != b.arriveTime)
+                    return a.arriveTime.CompareTo(b.arriveTime);
+                return a.building.CompareTo(b.building);
+            });
+
+            Custom.WriteColored("Порядок прибуття школярів:\n", White);
+            foreach (var (arriveTime, building, student) in arrivals)            
+                Custom.WriteColored("Прибув через: ",White ,$"{arriveTime} ",Yellow ,$"часу, з хмарочоса номер ", White, $"{building}, ",Yellow,"вийшовши з того ",White,$"{student} ",Yellow, "по порядку\n", White);            
         }
     }
     public static class Other
@@ -866,26 +948,20 @@ namespace Lab4
                 if (isNegative) result.mantissa = -result.mantissa;
                 return new BigRational((BigInteger)result.mantissa, result.exponent);
             }
-
             public override string ToString()
             {
                 if (Exponent == 0)
-                    return $"{Mantissa}";
+                    return Mantissa.ToString();
                 else if (Exponent > 0)
-                    return $"{Mantissa * BigInteger.Pow(10, (int)Exponent)}";
-                else if (Exponent < 0)
-                {
-                    string output = "";
-                    var mantissaChars = Mantissa.ToString();
-                    for (int i = 0; i < mantissaChars.Length + Exponent; i++)
-                        output += $"{mantissaChars[i]}";
-                    output += ".";
-                    for (int i = (int)(mantissaChars.Length + Exponent); i < mantissaChars.Length; i++)
-                        output += $"{mantissaChars[i]}";
-                    return output;
-                }
+                    return (Mantissa * BigInteger.Pow(10, (int)Exponent)).ToString();                                    
                 else
-                    return $"{Mantissa}e{Exponent}";
+                {                    
+                    string mantissaStr = Mantissa.ToString();
+                    int pointPosition = mantissaStr.Length + (int)Exponent;
+                    if (pointPosition <= 0)
+                        return "0." + new string('0', -pointPosition) + mantissaStr;
+                    return mantissaStr.Insert(pointPosition, ".");
+                }
             }
             public override bool Equals(object obj)
             {
@@ -1085,6 +1161,7 @@ namespace Lab4
         static public void StartTask(AMU arrayMethodsUsage, Task taskNum, IT inputType, bool mute = false)
         {
             ITaskContaiter TaskContainer = (arrayMethodsUsage == AMU.Nah) ? new AMLR() : new AMFR();
+
             if (!mute) Custom.WriteColored(
                 "\nЗапускаю задачу ", White, $"{(int)taskNum} ", Yellow,
                 ((arrayMethodsUsage == AMU.Nah) ? "без використання " : "з використанням ") + "методів класу System.", White, "Array ", DarkGreen,
@@ -1095,6 +1172,7 @@ namespace Lab4
                     IT.InCollon => "заповнення в стовпчик.\n",
                     _ => throw new NotImplementedException("Something went wrong")
                 }, White);
+
             Action<IT> task = taskNum switch
             {
                 Task._1 => TaskContainer.Task1,
