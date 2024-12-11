@@ -709,7 +709,7 @@ namespace Lab4
         {
             T[] output;
             var rn = new Random();
-            uint num;
+            
             switch (forTask)
             {
                 case Task._6:
@@ -800,7 +800,7 @@ namespace Lab4
             Custom.WriteColored("Типи відовідей:\n", White,
                                 "+", Yellow, " - загадане число більше.\n", White,
                                 "-", Yellow, " - загадане число менше.\n", White,
-                                "+", Yellow, " - дорівнює загаданому числу.\n", White);
+                                "=", Yellow, " - дорівнює загаданому числу.\n", White);
             for (int i = 1; answer != "=" && i <= 50; i++)
             {
                 num = (input[1] - input[0]) / 2 + input[0];
@@ -1158,11 +1158,11 @@ namespace Lab4
                                 "3", Yellow, " - Заповнити масив в стовпчик через ", White, "Enter\n", Yellow);
             return Custom.ReadLine(FixedEnumParse<IT>, true, "Неправильний тип введення", Red, Yellow, true);
         }
-        static public void StartTask(AMU arrayMethodsUsage, Task taskNum, IT inputType, bool mute = false)
+        static public void StartTask(AMU arrayMethodsUsage, Task taskNum, IT inputType)
         {
             ITaskContaiter TaskContainer = (arrayMethodsUsage == AMU.Nah) ? new AMLR() : new AMFR();
 
-            if (!mute) Custom.WriteColored(
+            Custom.WriteColored(
                 "\nЗапускаю задачу ", White, $"{(int)taskNum} ", Yellow,
                 ((arrayMethodsUsage == AMU.Nah) ? "без використання " : "з використанням ") + "методів класу System.", White, "Array ", DarkGreen,
                 "та використанням " + inputType switch
